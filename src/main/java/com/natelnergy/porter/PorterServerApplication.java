@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import com.bazaarvoice.dropwizard.redirect.PathRedirect;
 import com.bazaarvoice.dropwizard.redirect.RedirectBundle;
+import com.natelnergy.porter.api.v0.UploadResource;
 import com.natelnergy.porter.health.SimpleHealthCheck;
 import com.natelnergy.porter.tasks.EchoTask;
 import com.natelnergy.porter.util.IllegalArgumentExceptionMapper;
@@ -89,5 +90,8 @@ public class PorterServerApplication extends Application<PorterServerConfigurati
     environment.admin().addTask(new EchoTask());
     environment.jersey().register(IllegalArgumentExceptionMapper.class);
     environment.jersey().register(RolesAllowedDynamicFeature.class);
+    
+    // The resources
+    environment.jersey().register(UploadResource.class);
   }
 }

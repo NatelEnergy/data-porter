@@ -38,17 +38,11 @@
       <!-- 
         Comment this out after any version upgrades
         This forces version reconciliation across dependencies
-       -->
+      -->
       <dependency>
         <groupId>org.xerial.snappy</groupId>
         <artifactId>snappy-java</artifactId>
         <version>1.1.2.6</version>
-      </dependency>
-
-      <dependency>
-        <groupId>commons-codec</groupId>
-        <artifactId>commons-codec</artifactId>
-        <version>1.9</version>
       </dependency>
       <dependency>
         <groupId>commons-collections</groupId>
@@ -60,11 +54,19 @@
         <artifactId>commons-lang</artifactId>
         <version>2.6</version>
       </dependency>
+
+<!--
+      <dependency>
+        <groupId>commons-codec</groupId>
+        <artifactId>commons-codec</artifactId>
+        <version>1.9</version>
+      </dependency>
       <dependency>
         <groupId>commons-logging</groupId>
         <artifactId>commons-logging</artifactId>
         <version>1.2</version>
       </dependency>
+       -->
     </dependencies>
   </dependencyManagement>
 
@@ -80,24 +82,16 @@
       <version>${avro.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.avro</groupId>
-      <artifactId>avro-tools</artifactId>
-      <version>${avro.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.avro</groupId>
-          <artifactId>trevni-core</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.avro</groupId>
-          <artifactId>trevni-avro</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
       <groupId>org.apache.parquet</groupId>
       <artifactId>parquet-avro</artifactId>
       <version>1.10.0</version>
+    </dependency>
+
+
+    <dependency>
+      <groupId>net.sf.jopt-simple</groupId>
+      <artifactId>jopt-simple</artifactId>
+      <version>5.0.4</version>
     </dependency>
 
     <dependency>

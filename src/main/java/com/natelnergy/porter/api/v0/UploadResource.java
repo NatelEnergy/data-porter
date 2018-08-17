@@ -14,9 +14,9 @@ import javax.ws.rs.core.Response;
 import java.lang.invoke.MethodHandles;
 import io.swagger.annotations.*;
 
-@Path("/api/v0/upload")
+@Path("/upload")
 @Produces(MediaType.APPLICATION_JSON)
-@Api(tags="File Uploads")
+@Api(value="/upload", tags="File Upload")
 public class UploadResource {
   private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   

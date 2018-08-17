@@ -3,7 +3,7 @@ swagger:
   swaggerViewConfiguration:
     showApiSelector: false
     showAuth: false	
-    pageTitle: Upstream Excel API
+    pageTitle: Data Porter API
 
 server:
 #  softNofileLimit: 1000
