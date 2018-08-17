@@ -3,7 +3,6 @@ package com.natelenergy.porter;
 import io.dropwizard.testing.ResourceHelpers;
 import io.dropwizard.testing.junit.DropwizardAppRule;
 
-import org.apache.poi.hssf.util.CellReference;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -51,10 +50,10 @@ public class IntegrationTest {
 
   @Test
   public void testEvaluationRuns() throws Exception {
-    CellReference ref = new CellReference("sheet!B12");
-    assertThat(ref.getSheetName()).isEqualTo("sheet");
-    assertThat(ref.getRow()).isEqualTo(11);
-    assertThat(ref.getCol()).isEqualTo((short)1);
+//    CellReference ref = new CellReference("sheet!B12");
+//    assertThat(ref.getSheetName()).isEqualTo("sheet");
+//    assertThat(ref.getRow()).isEqualTo(11);
+//    assertThat(ref.getCol()).isEqualTo((short)1);
     
 //    final EvaluateRequest req = EXAMPLES.getEvaluateRequest(); //.loadAssetRequestExample("hydro/slh_01.json");
 //    System.out.println( "REQ: " + RULE.getObjectMapper().writeValueAsString(req));
