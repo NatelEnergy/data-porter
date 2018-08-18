@@ -1,4 +1,4 @@
-package com.natelnergy.porter.health;
+package com.natelenergy.porter.health;
 
 import com.codahale.metrics.health.HealthCheck;
 

@@ -1,4 +1,4 @@
-package com.natelnergy.porter.api.v0;
+package com.natelenergy.porter.api.v0;
 
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -26,6 +26,7 @@ public class UploadResource {
 
   @GET
   @Path("/hello")
+  @ApiOperation( value="hello", notes="hello notes!!!" )
   @Produces(MediaType.APPLICATION_JSON)
   public Response getSurfacePlot() throws Exception {
     JSONObject obj = new JSONObject();

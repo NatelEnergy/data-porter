@@ -7,9 +7,9 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import com.natelnergy.porter.PorterServerApplication;
-import com.natelnergy.porter.PorterServerConfiguration;
-import com.natelnergy.porter.api.v0.UploadResource;
+import com.natelenergy.porter.PorterServerApplication;
+import com.natelenergy.porter.PorterServerConfiguration;
+import com.natelenergy.porter.api.v0.UploadResource;
 
 import java.io.File;
 import java.io.IOException;

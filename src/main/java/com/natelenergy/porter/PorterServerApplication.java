@@ -1,4 +1,4 @@
-package com.natelnergy.porter;
+package com.natelenergy.porter;
 
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
@@ -18,10 +18,10 @@ import org.slf4j.LoggerFactory;
 
 import com.bazaarvoice.dropwizard.redirect.PathRedirect;
 import com.bazaarvoice.dropwizard.redirect.RedirectBundle;
-import com.natelnergy.porter.api.v0.UploadResource;
-import com.natelnergy.porter.health.SimpleHealthCheck;
-import com.natelnergy.porter.tasks.EchoTask;
-import com.natelnergy.porter.util.IllegalArgumentExceptionMapper;
+import com.natelenergy.porter.api.v0.UploadResource;
+import com.natelenergy.porter.health.SimpleHealthCheck;
+import com.natelenergy.porter.tasks.EchoTask;
+import com.natelenergy.porter.util.IllegalArgumentExceptionMapper;
 
 import org.eclipse.jetty.servlets.CrossOriginFilter;
 import javax.servlet.DispatcherType;

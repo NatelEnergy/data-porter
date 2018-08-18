@@ -1,4 +1,4 @@
-package com.natelnergy.porter;
+package com.natelenergy.porter;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.dropwizard.Configuration;

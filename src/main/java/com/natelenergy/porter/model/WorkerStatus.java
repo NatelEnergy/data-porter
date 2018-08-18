@@ -1,4 +1,4 @@
-package com.natelnergy.porter.model;
+package com.natelenergy.porter.model;
 
 public class WorkerStatus {
   public static enum State {

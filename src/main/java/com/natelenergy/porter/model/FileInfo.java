@@ -1,4 +1,4 @@
-package com.natelnergy.porter.model;
+package com.natelenergy.porter.model;
 
 public class FileInfo {
   public String source; // fs, s3, upload, etc..
