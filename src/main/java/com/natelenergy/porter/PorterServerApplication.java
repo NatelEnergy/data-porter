@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import com.bazaarvoice.dropwizard.redirect.PathRedirect;
 import com.bazaarvoice.dropwizard.redirect.RedirectBundle;
+import com.natelenergy.porter.api.v0.JSONResource;
 import com.natelenergy.porter.api.v0.UploadResource;
 import com.natelenergy.porter.health.SimpleHealthCheck;
 import com.natelenergy.porter.tasks.EchoTask;
@@ -93,5 +94,6 @@ public class PorterServerApplication extends Application<PorterServerConfigurati
     
     // The resources
     environment.jersey().register(UploadResource.class);
+    environment.jersey().register(JSONResource.class);
   }
 }
