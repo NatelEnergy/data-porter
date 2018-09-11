@@ -40,6 +40,7 @@ jobs:
             mv target/*.jar dist
             rm dist/*-sources.jar
             rm dist/original*
+            cp config.yml dist
 
       - store_artifacts:
           path: dist
