@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import com.natelenergy.porter.api.v0.JSONResource;
 import com.natelenergy.porter.model.LiveDB;
 
 import static org.assertj.core.api.Assertions.*;
@@ -83,5 +84,15 @@ public class LiveDBTest {
 //
 //        verify(PERSON_DAO).findAll();
 //        assertThat(response).containsAll(people);
+    }
+    
+
+    @Test
+    public void checkDBNames() throws Exception {
+      assertThat(JSONResource.IsOkDBName("big")).isTrue();
+      assertThat(JSONResource.IsOkDBName("big-loop-xar")).isTrue();
+      assertThat(JSONResource.IsOkDBName("big_loop_xar")).isTrue();
+      assertThat(JSONResource.IsOkDBName("big/loop/xar")).isFalse();
+      assertThat(JSONResource.IsOkDBName("big loop xar")).isFalse();
     }
 }

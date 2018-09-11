@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.lang.model.SourceVersion;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -37,6 +36,11 @@ public class JSONResource {
   
   public JSONResource() {
     
+  }
+  
+  public static boolean IsOkDBName(String v)
+  {
+    return v.matches("^(\\w|-|_)*");
   }
 
   @GET
@@ -85,7 +89,7 @@ public class JSONResource {
     
     LiveDB db = dbs.get(name);
     if(db==null) {
-      if(!SourceVersion.isIdentifier(name)) {
+      if(!IsOkDBName(name)) {
         throw new IllegalArgumentException("Invalid DB name");
       }
       db = new LiveDB();
@@ -108,7 +112,7 @@ public class JSONResource {
   @Path("/dump")
   @ApiOperation( value="dump", hidden=true )
   @Produces(MediaType.TEXT_PLAIN)
-  public String dumpSheet(@QueryParam("path") String path, @QueryParam("path") String range) {
+  public String dump(@QueryParam("path") String path, @QueryParam("path") String range) {
     StringBuilder str = new StringBuilder();
     str.append("KEYS: "+ dbs.keys() );
     return str.toString();

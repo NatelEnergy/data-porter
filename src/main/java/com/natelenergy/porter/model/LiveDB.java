@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import javax.lang.model.SourceVersion;
 import javax.ws.rs.NotFoundException;
 
 import com.google.common.base.Strings;
@@ -51,7 +50,7 @@ public class LiveDB {
             root = (Map<String,Object>)v;
           }
           else {
-            // Replace everything tha tis not a map
+            // Replace everything that is not a map
             Map<String,Object> tmp = new ConcurrentHashMap<>();
             root.put(p, tmp);
             root = tmp;
@@ -60,9 +59,6 @@ public class LiveDB {
       }
       
       for(Map.Entry<String, Object> entry : data.entrySet()) {
-        if( !SourceVersion.isIdentifier(entry.getKey()) ) {
-          throw new IllegalArgumentException( "Invalid field name" );
-        }
         Object v = entry.getValue();
         if(v instanceof Map) {
           v = new ConcurrentHashMap<>((Map)v);
