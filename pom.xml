@@ -294,7 +294,7 @@
           <transformers>
             <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
             <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-              <mainClass>com.natelenergy.porter.DataPorterServerApplication</mainClass>
+              <mainClass>com.natelenergy.porter.PorterServerApplication</mainClass>
             </transformer>
           </transformers>
         </configuration>
