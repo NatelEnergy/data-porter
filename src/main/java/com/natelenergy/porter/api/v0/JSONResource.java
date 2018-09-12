@@ -1,7 +1,10 @@
 package com.natelenergy.porter.api.v0;
 
 import java.lang.invoke.MethodHandles;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -16,6 +19,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +51,7 @@ public class JSONResource {
   @Path("{db}/{path : (.+)?}")
   @ApiOperation( value="get value", notes="hello notes!!!" )
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getData(
+  public Response get(
       @PathParam("db") 
       String name,
 
@@ -73,7 +77,7 @@ public class JSONResource {
   @ApiOperation( value="set value", notes="hello notes!!!" )
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response setData(
+  public Response set(
       @PathParam("db") 
       @ApiParam(example="myDB")
       String name,
@@ -93,7 +97,6 @@ public class JSONResource {
         throw new IllegalArgumentException("Invalid DB name");
       }
       db = new LiveDB();
-      dbs.put(name, db);
     }
     
     // Update the value
@@ -106,15 +109,18 @@ public class JSONResource {
     return Response.ok(rsp).build();
   }
   
-
-  
   @GET
-  @Path("/dump")
-  @ApiOperation( value="dump", hidden=true )
-  @Produces(MediaType.TEXT_PLAIN)
-  public String dump(@QueryParam("path") String path, @QueryParam("path") String range) {
-    StringBuilder str = new StringBuilder();
-    str.append("KEYS: "+ dbs.keys() );
-    return str.toString();
+  @Path("")
+  @ApiOperation( value="list dbs", notes="hello notes!!!" )
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response list() throws Exception {
+    List<String> names = new ArrayList<>(dbs.size()+2);
+    Enumeration<String> keys = dbs.keys();
+    while(keys.hasMoreElements()) {
+      names.add(keys.nextElement());
+    }
+    Map<String, Object> map = new HashMap<>();
+    map.put("names", names);
+    return Response.ok(map).build();
   }
 }
