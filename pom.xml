@@ -35,6 +35,13 @@
         <scope>import</scope>
       </dependency>
 
+<!-- Set explicilty: https://github.com/smoketurner/dropwizard-swagger/issues/84 -->
+<dependency>
+  <groupId>org.reflections</groupId>
+  <artifactId>reflections</artifactId>
+  <version>0.9.10</version>
+</dependency>
+
       <!-- 
         Comment this out after any version upgrades
         This forces version reconciliation across dependencies
