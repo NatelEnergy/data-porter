@@ -2,6 +2,7 @@ package com.natelenergy.porter.api.v0;
 
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -61,6 +62,7 @@ public class JSONResource {
     
     LiveDB db = dbs.get(name);
     if(db==null) {
+      LOGGER.warn("can not find :"+name + " in: "+Collections.list(dbs.keys()));
       return Response.status(Status.NOT_FOUND).build();
     }
 
@@ -96,6 +98,7 @@ public class JSONResource {
       if(!IsOkDBName(name)) {
         throw new IllegalArgumentException("Invalid DB name");
       }
+      LOGGER.info("Creating database: "+name);
       db = new LiveDB();
       dbs.put(name, db);
     }
@@ -115,13 +118,8 @@ public class JSONResource {
   @ApiOperation( value="list dbs", notes="hello notes!!!" )
   @Produces(MediaType.APPLICATION_JSON)
   public Response list() throws Exception {
-    List<String> names = new ArrayList<>(dbs.size()+2);
-    Enumeration<String> keys = dbs.keys();
-    while(keys.hasMoreElements()) {
-      names.add(keys.nextElement());
-    }
     Map<String, Object> map = new HashMap<>();
-    map.put("names", names);
+    map.put("names", Collections.list(dbs.keys()));
     return Response.ok(map).build();
   }
 }
