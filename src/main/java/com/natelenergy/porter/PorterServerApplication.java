@@ -18,6 +18,8 @@ import org.slf4j.LoggerFactory;
 
 import com.bazaarvoice.dropwizard.redirect.PathRedirect;
 import com.bazaarvoice.dropwizard.redirect.RedirectBundle;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.natelenergy.porter.api.v0.InfoResource;
 import com.natelenergy.porter.api.v0.JSONResource;
 import com.natelenergy.porter.api.v0.UploadResource;
 import com.natelenergy.porter.health.SimpleHealthCheck;
@@ -92,8 +94,11 @@ public class PorterServerApplication extends Application<PorterServerConfigurati
     environment.jersey().register(IllegalArgumentExceptionMapper.class);
     environment.jersey().register(RolesAllowedDynamicFeature.class);
     
+    ObjectMapper mapper = environment.getObjectMapper();
+    
     // The resources
     environment.jersey().register(UploadResource.class);
     environment.jersey().register(JSONResource.class);
+    environment.jersey().register(new InfoResource(mapper));
   }
 }

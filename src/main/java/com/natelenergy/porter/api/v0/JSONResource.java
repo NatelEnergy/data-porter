@@ -97,6 +97,7 @@ public class JSONResource {
         throw new IllegalArgumentException("Invalid DB name");
       }
       db = new LiveDB();
+      dbs.put(name, db);
     }
     
     // Update the value
