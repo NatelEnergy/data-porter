@@ -5,8 +5,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import javax.ws.rs.NotFoundException;
-
 import com.google.common.base.Strings;
 
 public class LiveDB {
@@ -19,45 +17,49 @@ public class LiveDB {
     this.root = new ConcurrentHashMap<>();
   }
   
-  public Map<String,Object> get(String path) {
-    Map<String,Object> res = root;
+  public <T> T get(String path) {
+    Object res = root;
     if(!Strings.isNullOrEmpty(path)) {
       for(String p : path.split("/")) {
-        Object v = res.get(p);
-        if(v == null) {
-          throw new NotFoundException();
-        }
-        if(v instanceof Map) {
-          res = (Map<String,Object>)v;
-        }
-        else {
-          throw new IllegalStateException("can not select a value diretly: "+p);
+        String key = p.trim();
+        if(key.length()>0) {
+          if(res instanceof Map) {
+            res = ((Map)res).get(key);
+          }
+          else {
+            throw new IllegalArgumentException("Not Found: "+key + " // " + path);
+          }
         }
       }
     }
-    return res;
+    return (T)res;
   }
   
   // Use a key with dots to set deeper elements
   public void set(String path, Map<String,Object> data) {
     boolean changed = false;
     try {
+      // 1. Find the root structure
       Map<String,Object> root = this.root;
       if(!Strings.isNullOrEmpty(path)) {
         for(String p : path.split("/")) {
-          Object v = root.get(p);
-          if(v instanceof Map) {
-            root = (Map<String,Object>)v;
-          }
-          else {
-            // Replace everything that is not a map
-            Map<String,Object> tmp = new ConcurrentHashMap<>();
-            root.put(p, tmp);
-            root = tmp;
+          String norm = p.trim();
+          if(!Strings.isNullOrEmpty(norm)) {
+            Object v = root.get(norm);
+            if(v instanceof Map) {
+              root = (Map<String,Object>)v;
+            }
+            else {
+              // Replace everything that is not a map
+              Map<String,Object> tmp = new ConcurrentHashMap<>();
+              root.put(norm, tmp);
+              root = tmp;
+            }
           }
         }
       }
       
+      // 2. Set each value at that level
       for(Map.Entry<String, Object> entry : data.entrySet()) {
         Object v = entry.getValue();
         if(v instanceof Map) {
