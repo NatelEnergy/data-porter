@@ -92,7 +92,10 @@ public class JSONResource {
       @ApiParam(example="{ \"first\": \"Ryan\" }")
       Map<String,Object> body
       ) throws Exception {
-    
+
+    Map<String, Object> rsp = new HashMap<>();
+    rsp.put("db", name);
+    rsp.put("path", path);
     LiveDB db = dbs.get(name);
     if(db==null) {
       if(!IsOkDBName(name)) {
@@ -101,14 +104,12 @@ public class JSONResource {
       LOGGER.info("Creating database: "+name);
       db = new LiveDB();
       dbs.put(name, db);
+      rsp.put("created", true);
     }
     
     // Update the value
     db.set(path, body);
     
-    Map<String, Object> rsp = new HashMap<>();
-    rsp.put("db", name);
-    rsp.put("path", path);
     rsp.put("modified", db.getLastModified());
     return Response.ok(rsp).build();
   }
