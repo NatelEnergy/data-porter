@@ -96,7 +96,10 @@ public class PorterServerApplication extends Application<PorterServerConfigurati
     
     ObjectMapper mapper = environment.getObjectMapper();
     InfoResource info = new InfoResource(mapper);
-    LOGGER.info("Loading: \n>>\n>>  "+info.getGitDescription()+"\n>>\n>>" );
+    LOGGER.info("Loading: \n"
+        + ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
+        + ">>  "+info.getGitDescription()+"\n>>\n"
+        + ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" );
     
     // The resources
     environment.jersey().register(UploadResource.class);
