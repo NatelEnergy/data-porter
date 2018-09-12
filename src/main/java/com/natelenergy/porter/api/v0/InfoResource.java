@@ -48,7 +48,7 @@ public class InfoResource {
   
   public Map<String,Object> loadGit() throws Exception {
     ClassLoader classLoader = this.getClass().getClassLoader();
-    InputStream stream = classLoader.getResourceAsStream("git.properties");
+    InputStream stream = classLoader.getResourceAsStream("git.json");
     return (Map<String,Object>)mapper.readValue(stream, HashMap.class);
   }
   
@@ -58,5 +58,17 @@ public class InfoResource {
   @Produces(MediaType.APPLICATION_JSON)
   public Response git() throws Exception {
     return Response.ok(loadGit()).build();
+  }
+
+  public String getGitDescription() {
+    try {
+      Map<String,Object> git = loadGit();
+      String time = (String)git.get("git.build.time");
+      String ref = (String)git.get("git.commit.id.abbrev");
+      String ver = (String)git.get("git.build.version");
+      return ver + " (" + ref + ") " + time;
+    }
+    catch(Exception ex) {}
+    return "<unknown>";
   }
 }
