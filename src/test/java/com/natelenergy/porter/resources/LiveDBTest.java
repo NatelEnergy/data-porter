@@ -52,7 +52,7 @@ public class LiveDBTest {
 //
     @Test
     public void checkDBManipulation() throws Exception {
-      LiveDB db = new LiveDB();
+      LiveDB db = new LiveDB("test", null, 10);
       
       Map<String,Object> v = new HashMap<>();
       v.put("one", 1);

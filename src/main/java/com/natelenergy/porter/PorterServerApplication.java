@@ -101,9 +101,10 @@ public class PorterServerApplication extends Application<PorterServerConfigurati
         + ">>  "+info.getGitDescription()+"\n>>\n"
         + ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" );
     
+    
     // The resources
     environment.jersey().register(UploadResource.class);
-    environment.jersey().register(JSONResource.class);
+    environment.jersey().register(new JSONResource(configuration.liveDB));
     environment.jersey().register(info);
   }
 }

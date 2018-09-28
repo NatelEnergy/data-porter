@@ -20,6 +20,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.natelenergy.porter.model.LiveDB;
+import com.natelenergy.porter.model.LiveDBConfiguration;
+import com.natelenergy.porter.model.StringStore;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -34,8 +36,19 @@ public class JSONResource {
   // Share this across all instances
   private static final ConcurrentHashMap<String, LiveDB> dbs = new ConcurrentHashMap<>();
   
-  public JSONResource() {
+  private final StringStore store;
+  private final int saveInterval;
+  
+  public JSONResource(LiveDBConfiguration config) {
+    this.store = config.create();
+    this.saveInterval = config.saveInterval;
     
+    // Load all saved data
+    if(this.store!=null) {
+      for(String name : this.store.list()) {
+        dbs.put(name, new LiveDB(name, store, saveInterval));
+      }
+    }
   }
   
   public static boolean IsOkDBName(String v)
@@ -97,7 +110,7 @@ public class JSONResource {
         throw new IllegalArgumentException("Invalid DB name");
       }
       LOGGER.info("Creating database: "+name);
-      db = new LiveDB();
+      db = new LiveDB(name, store, saveInterval);
       dbs.put(name, db);
       rsp.put("created", true);
     }
