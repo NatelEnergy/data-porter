@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 
 public class LiveDB {
@@ -123,6 +124,10 @@ public class LiveDB {
         else if(v instanceof Collection) {
           v = new CopyOnWriteArrayList<>((Collection)v);
         }
+        Object old = root.get(entry.getKey());
+        if(!Objects.equal(old, v)) {
+          changed = true;
+        }
         root.put(entry.getKey(), v);
       }
     }
@@ -132,7 +137,7 @@ public class LiveDB {
         
         // Check if we should try to save the contents
         synchronized(this) {
-          if(this.file != null && saver != null) {
+          if(this.file != null && saver == null) {
             long delay = Math.max( 2, saveInterval - (System.currentTimeMillis() - saved));
             this.saver = scheduler.schedule(new Runnable() {
               @Override

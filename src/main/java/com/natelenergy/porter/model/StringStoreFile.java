@@ -31,16 +31,19 @@ public class StringStoreFile implements StringStore {
   @Override
   public String read(String name, AtomicLong modified) throws IOException {
     File f = new File(this.root, name + ".json");
-    if(modified!=null) {
-      modified.set(f.lastModified());
+    if(f.exists()) {
+      if(modified!=null) {
+        modified.set(f.lastModified());
+      }
+      return Files.asCharSource(f, Charsets.UTF_8).read();
     }
-    return Files.asCharSource(f, Charsets.UTF_8).read();
+    return null;
   }
 
   @Override
   public void write(String name, String val) throws IOException {
     File f = new File(this.root, name + ".json");
-    Files.asCharSink(f, Charsets.UTF_8 ).write(val);
+    Files.asCharSink(f, Charsets.UTF_8 ).write(val+"\n");
   }
 }
 
