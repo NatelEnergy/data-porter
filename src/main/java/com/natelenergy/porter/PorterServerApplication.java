@@ -6,12 +6,14 @@ import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import io.dropwizard.views.ViewBundle;
 import io.federecio.dropwizard.swagger.*;
 
 import java.lang.invoke.MethodHandles;
 
 import javax.servlet.FilterRegistration;
 
+import org.glassfish.jersey.media.multipart.*;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +43,7 @@ public class PorterServerApplication extends Application<PorterServerConfigurati
   public String getName() {
     return "data-porter";
   }
-
+  
   @Override
   public void initialize(Bootstrap<PorterServerConfiguration> bootstrap) {
     bootstrap.addBundle(new SwaggerBundle<PorterServerConfiguration>() {
@@ -68,6 +70,7 @@ public class PorterServerApplication extends Application<PorterServerConfigurati
         )
     );
     bootstrap.addBundle(new AssetsBundle());
+    bootstrap.addBundle(new ViewBundle<>());
     
     // Redirect the home to swagger
     bootstrap.addBundle(new RedirectBundle(
@@ -93,6 +96,8 @@ public class PorterServerApplication extends Application<PorterServerConfigurati
     environment.admin().addTask(new EchoTask());
     environment.jersey().register(IllegalArgumentExceptionMapper.class);
     environment.jersey().register(RolesAllowedDynamicFeature.class);
+    environment.jersey().register(MultiPartFeature.class);
+    
     
     ObjectMapper mapper = environment.getObjectMapper();
     InfoResource info = new InfoResource(mapper);
