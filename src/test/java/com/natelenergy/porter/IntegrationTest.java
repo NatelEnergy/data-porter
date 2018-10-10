@@ -37,7 +37,7 @@ public class IntegrationTest {
   public static void migrateDb() throws Exception {
     // RULE.getApplication().run("db", "migrate", CONFIG_PATH);
     //LOCATOR = new WorkbookLocator(Files.createTempDirectory("xls-test").toFile(), RULE.getObjectMapper() );
-    EXAMPLES = new UploadResource();
+    EXAMPLES = new UploadResource( new File("data/test/upload" ));
   }
 
   private static String createTempFile() {

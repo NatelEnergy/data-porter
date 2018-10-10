@@ -9,6 +9,7 @@ import io.dropwizard.setup.Environment;
 import io.dropwizard.views.ViewBundle;
 import io.federecio.dropwizard.swagger.*;
 
+import java.io.File;
 import java.lang.invoke.MethodHandles;
 
 import javax.servlet.FilterRegistration;
@@ -107,8 +108,11 @@ public class PorterServerApplication extends Application<PorterServerConfigurati
         + ">>  "+info.getGitDescription()+"\n>>\n"
         + ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" );
     
+    
+    File dir = new File("data/upload");
+    
     // The resources
-    environment.jersey().register(new UploadResource());
+    environment.jersey().register(new UploadResource(dir));
     environment.jersey().register(new JSONResource(configuration.liveDB));
     environment.jersey().register(info);
   }
