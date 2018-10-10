@@ -25,7 +25,6 @@ import com.natelenergy.porter.api.v0.InfoResource;
 import com.natelenergy.porter.api.v0.JSONResource;
 import com.natelenergy.porter.api.v0.UploadResource;
 import com.natelenergy.porter.health.SimpleHealthCheck;
-import com.natelenergy.porter.servlet.FileUploadServlet;
 import com.natelenergy.porter.tasks.EchoTask;
 import com.natelenergy.porter.util.IllegalArgumentExceptionMapper;
 
@@ -92,6 +91,7 @@ public class PorterServerApplication extends Application<PorterServerConfigurati
 
     // Add URL mapping
     cors.addMappingForUrlPatterns(EnumSet.allOf(DispatcherType.class), true, "/*");
+
     
     environment.healthChecks().register("simple", new SimpleHealthCheck());
     environment.admin().addTask(new EchoTask());
@@ -106,10 +106,6 @@ public class PorterServerApplication extends Application<PorterServerConfigurati
         + ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
         + ">>  "+info.getGitDescription()+"\n>>\n"
         + ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" );
-    
-    environment.servlets()
-      .addServlet("foo", FileUploadServlet.class)
-      .addMapping("/yyyy");
     
     // The resources
     environment.jersey().register(new UploadResource());

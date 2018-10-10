@@ -123,7 +123,6 @@ public class JSONResource {
   }
   
   @GET
-  @Path("")
   @ApiOperation( value="list dbs", notes="hello notes!!!" )
   @Produces(MediaType.APPLICATION_JSON)
   public Response list() throws Exception {
