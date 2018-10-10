@@ -25,6 +25,7 @@ import com.natelenergy.porter.api.v0.InfoResource;
 import com.natelenergy.porter.api.v0.JSONResource;
 import com.natelenergy.porter.api.v0.UploadResource;
 import com.natelenergy.porter.health.SimpleHealthCheck;
+import com.natelenergy.porter.servlet.FileUploadServlet;
 import com.natelenergy.porter.tasks.EchoTask;
 import com.natelenergy.porter.util.IllegalArgumentExceptionMapper;
 
@@ -100,15 +101,18 @@ public class PorterServerApplication extends Application<PorterServerConfigurati
     
     
     ObjectMapper mapper = environment.getObjectMapper();
-    InfoResource info = new InfoResource(mapper);
+    InfoResource info = new InfoResource();
     LOGGER.info("Loading: \n"
         + ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
         + ">>  "+info.getGitDescription()+"\n>>\n"
         + ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" );
     
+    environment.servlets()
+      .addServlet("foo", FileUploadServlet.class)
+      .addMapping("xxxx");
     
     // The resources
-    environment.jersey().register(UploadResource.class);
+    environment.jersey().register(new UploadResource());
     environment.jersey().register(new JSONResource(configuration.liveDB));
     environment.jersey().register(info);
   }

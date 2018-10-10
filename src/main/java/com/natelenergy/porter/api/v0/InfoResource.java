@@ -13,6 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 
@@ -24,8 +26,9 @@ public class InfoResource {
   
   private final ObjectMapper mapper;
   
-  public InfoResource(ObjectMapper mapper) {
-    this.mapper = mapper;
+  public InfoResource() {
+    this.mapper = new ObjectMapper();
+    this.mapper.enable(SerializationFeature.INDENT_OUTPUT);
   }
   
   public Map<String,Object> loadGit() throws Exception {
