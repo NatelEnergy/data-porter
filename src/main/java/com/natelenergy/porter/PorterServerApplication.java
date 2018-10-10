@@ -109,7 +109,7 @@ public class PorterServerApplication extends Application<PorterServerConfigurati
     
     environment.servlets()
       .addServlet("foo", FileUploadServlet.class)
-      .addMapping("xxxx");
+      .addMapping("/yyyy");
     
     // The resources
     environment.jersey().register(new UploadResource());
