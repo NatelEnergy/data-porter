@@ -84,6 +84,8 @@ public class UploadResource {
   FileUploadInfo process(String path, InputStream stream, boolean notify) throws IOException
   {
     File f = new File(root, path);
+    f.getParentFile().mkdirs();
+    
     File tmp = File.createTempFile(f.getName(), "_upload", f.getParentFile());
     
     try( OutputStream outStream = new FileOutputStream(tmp) ) {

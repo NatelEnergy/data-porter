@@ -31,6 +31,9 @@ public class FileUploadInfo {
       if(abs.length()>root.length()) {
         info.path = f.getAbsolutePath().substring(root.length()+1).replace('\\', '/');
       }
+      else {
+        info.path = "?";
+      }
     }
     else {
       info.name = f.getName();
