@@ -88,13 +88,20 @@ public class UploadResource {
     
     File tmp = File.createTempFile(f.getName(), "_upload", f.getParentFile());
     
+    long ts = -1;
     try( OutputStream outStream = new FileOutputStream(tmp) ) {
       byte[] buffer = new byte[8 * 1024];
       int bytesRead;
       while ((bytesRead = stream.read(buffer)) != -1) {
         outStream.write(buffer, 0, bytesRead);
         if(notify) {
-          System.out.println( "TODO notify! "+f.getName() );
+          long now = System.currentTimeMillis();
+          long elapsed = now-ts;
+          if(elapsed > 1000) {
+            
+            System.out.println( "TODO notify! "+f.getName() );
+            ts = now;
+          }
         }
       }
     }
