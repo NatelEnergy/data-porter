@@ -19,6 +19,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import java.io.*;
 import java.lang.invoke.MethodHandles;
+import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import io.swagger.annotations.*;
 
@@ -66,6 +67,36 @@ public class FilesResource {
     }
     return Response.ok(FileUploadInfo.make(p, root, true)).build();
   }
+
+  @POST
+  @Path("queue/{path : (.+)?}")
+  public Object queueFile(
+      @PathParam("path") 
+      String path) throws IOException {
+
+    java.nio.file.Path p = root.resolve(path);
+    if(!Files.exists(p)) {
+      return Response.noContent().build();
+    }
+    
+    
+    if(Files.isDirectory(p)) {
+      // Queue all files in the directory
+      Files.walk(p, FileVisitOption.FOLLOW_LINKS ).forEach( s -> {
+        String rel = root.relativize(s).toString();
+        workers.queue(createFileProcessor(rel, s, false));
+      });
+    }
+    else {
+      workers.queue(createFileProcessor(path, p, false));
+    }
+    
+    try {
+      Thread.sleep(10);
+    } 
+    catch (InterruptedException e) {}
+    return workers.getStatus();
+  }
   
   @POST
   @Path("stream/{path : (.+)?}")
@@ -99,7 +130,7 @@ public class FilesResource {
 
   @POST
   @Consumes(MediaType.MULTIPART_FORM_DATA)
-  @Path("upload")
+  @Path("upload.form")
   public FileUploadInfo uploadFile(
       @FormParam("folder") 
       String folder,

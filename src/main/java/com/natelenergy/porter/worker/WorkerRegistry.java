@@ -11,6 +11,10 @@ import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.natelenergy.porter.worker.FileWorkerStatus.State;
 
 public class WorkerRegistry {
 
@@ -19,7 +23,9 @@ public class WorkerRegistry {
   private final ExecutorService cached;
   
   private Map<FileWorker,FileWorker> active = new ConcurrentHashMap<>();
-  
+
+  private Map<String,AtomicInteger> failed = new ConcurrentHashMap<>();
+  private Map<String,AtomicInteger> finished = new ConcurrentHashMap<>();
   private FileWorkerStatus[] history = new FileWorkerStatus[20];
   private int historyIndex = 0;
   
@@ -38,11 +44,26 @@ public class WorkerRegistry {
       finally {
         active.remove(worker);
         
+        FileWorkerStatus s = worker.getStatus();
+        
         // Add to the history
         synchronized(history) {
-          history[historyIndex] = worker.getStatus();
+          history[historyIndex] = s;
           if(++historyIndex > history.length) {
             historyIndex = 0;
+          }
+        }
+        
+        if(worker.is(State.FAILED)) {
+          AtomicInteger v = failed.putIfAbsent(s.worker, new AtomicInteger(1));
+          if(v!=null) {
+            v.incrementAndGet();
+          }
+        }
+        else {
+          AtomicInteger v = finished.putIfAbsent(s.worker, new AtomicInteger(1));
+          if(v!=null) {
+            v.incrementAndGet();
           }
         }
       }
@@ -61,11 +82,15 @@ public class WorkerRegistry {
   
   //----------------------------------------------------------------------------
   //----------------------------------------------------------------------------
-  
+
+  @JsonInclude(Include.NON_NULL)
   public static class RegistryStatus {
     public int queued = 0;
     public List<FileWorkerStatus> active;
     public List<FileWorkerStatus> history;
+
+    public Map<String,AtomicInteger> finished;
+    public Map<String,AtomicInteger> failed;
   }
   
   public RegistryStatus getStatus()
@@ -83,6 +108,12 @@ public class WorkerRegistry {
       }
     }
     s.queued = buffer.size();
+    if(this.finished.size()>0) {
+      s.finished = this.finished;
+    }
+    if(this.failed.size()>0) {
+      s.failed = this.failed;
+    }
     return s;
   }
   
