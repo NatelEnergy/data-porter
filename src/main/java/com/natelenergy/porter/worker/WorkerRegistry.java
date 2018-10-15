@@ -49,7 +49,7 @@ public class WorkerRegistry {
         // Add to the history
         synchronized(history) {
           history[historyIndex] = s;
-          if(++historyIndex > history.length) {
+          if(++historyIndex >= history.length) {
             historyIndex = 0;
           }
         }
