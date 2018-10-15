@@ -30,10 +30,10 @@ public abstract class FileWorker implements Runnable {
     FileWorkerStatus s = getStatus();
     try {
       s.state = State.RUNNING;
+      s.started = System.currentTimeMillis();
       this.doRun();
     }
     catch(Exception ex) {
-      s.httpStatusCode = 500;
       s.addError(ex);
       s.state = State.FAILED;
       LOGGER.info("Failed: "+s.path, ex);

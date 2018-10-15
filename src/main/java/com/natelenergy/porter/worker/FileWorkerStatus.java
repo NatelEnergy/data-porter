@@ -45,12 +45,11 @@ public class FileWorkerStatus {
   public Long finished;
   
   public List<Message> messages;
-  public Integer httpStatusCode;
   
   
   public FileWorkerStatus(FileWorker worker, String path) {
     this.worker = (worker==null)? "<none>" : worker.getClass().getSimpleName();
-    this.path = path;
+    this.path = path.replace('\\', '/');
     this.queued = System.currentTimeMillis();
     this.state = State.QUEUED;
   }

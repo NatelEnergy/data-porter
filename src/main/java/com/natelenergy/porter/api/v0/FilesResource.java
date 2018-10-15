@@ -23,9 +23,9 @@ import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import io.swagger.annotations.*;
 
-@Path("/files")
+@Path("/file")
 @Produces(MediaType.APPLICATION_JSON)
-@Api(value="/files", tags="Manage Files")
+@Api(value="/file", tags="Manage Files")
 public class FilesResource {
   private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -99,46 +99,47 @@ public class FilesResource {
   }
   
   @POST
-  @Path("stream/{path : (.+)?}")
+  @Path("upload/{path : (.+)?}")
   public FileUploadInfo streamFile(
       @PathParam("path") 
       String path,
       
-      InputStream data) throws IOException 
-  {
-    java.nio.file.Path p = root.resolve(path);
-    
-    WriteStreamWorker w = new WriteStreamWorker(path, p, data, null);
-    w.child = createFileProcessor(path, p, true);
-    workers.start(w.child);
-    workers.run(w);
-    
-    return FileUploadInfo.make(p, root, true);
-  }
-  
-  @POST
-  @Path("upload/{path : (.+)?}")
-  public FileUploadInfo uploadFile(
-      @PathParam("path") 
-      String path,
+      @QueryParam("stream")
+      @DefaultValue("false")
+      boolean stream,
+      
+      @Context 
+      HttpHeaders headers,
       
       InputStream data) throws IOException 
   {
     java.nio.file.Path p = root.resolve(path);
+    
+    if(stream) {
+      Long length = null;
+      int len = headers.getLength();
+      if(len > 0) {
+        length = new Long(len);
+      }
+      
+      WriteStreamWorker w = new WriteStreamWorker(path, p, data, length);
+      w.child = createFileProcessor(path, p, true);
+      workers.start(w.child);
+      workers.run(w);
+      return FileUploadInfo.make(p, root, true);
+    }
     return doUpload(p, data, null);
   }
 
   @POST
   @Consumes(MediaType.MULTIPART_FORM_DATA)
-  @Path("upload.form")
+  @Path("upload")
   public FileUploadInfo uploadFile(
-      @FormParam("folder") 
-      String folder,
       
       @FormDataParam("file") InputStream data,
       @FormDataParam("file") FormDataContentDisposition fileDetail) throws IOException {
     
-    java.nio.file.Path p = root.resolve(folder);
+    java.nio.file.Path p = root.resolve( "aaaaaaaaaaaaa" );
     p = p.resolve(fileDetail.getFileName());
     return doUpload(p, data, null);
   }

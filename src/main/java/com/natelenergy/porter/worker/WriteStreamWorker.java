@@ -1,5 +1,5 @@
 package com.natelenergy.porter.worker;
-import static java.nio.file.StandardOpenOption.WRITE;
+import java.nio.file.StandardOpenOption;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,7 +33,10 @@ public class WriteStreamWorker extends FileWorker {
     
     long cursor = 0;
     long ts = System.currentTimeMillis();
-    try( OutputStream outStream = Files.newOutputStream(f, WRITE )) {
+    try( OutputStream outStream = Files.newOutputStream(f, 
+        StandardOpenOption.CREATE, 
+        StandardOpenOption.WRITE )) 
+    {
       byte[] buffer = new byte[8 * 1024];
       int bytesRead;
       while ((bytesRead = stream.read(buffer)) != -1) {
