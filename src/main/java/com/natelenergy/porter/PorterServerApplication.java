@@ -24,10 +24,12 @@ import com.bazaarvoice.dropwizard.redirect.RedirectBundle;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.natelenergy.porter.api.v0.InfoResource;
 import com.natelenergy.porter.api.v0.JSONResource;
-import com.natelenergy.porter.api.v0.UploadResource;
+import com.natelenergy.porter.api.v0.WorkersResource;
+import com.natelenergy.porter.api.v0.FilesResource;
 import com.natelenergy.porter.health.SimpleHealthCheck;
 import com.natelenergy.porter.tasks.EchoTask;
 import com.natelenergy.porter.util.IllegalArgumentExceptionMapper;
+import com.natelenergy.porter.worker.WorkerRegistry;
 
 import org.eclipse.jetty.servlets.CrossOriginFilter;
 import javax.servlet.DispatcherType;
@@ -110,9 +112,11 @@ public class PorterServerApplication extends Application<PorterServerConfigurati
     
     
     File dir = new File("data/upload");
+    WorkerRegistry registry = new WorkerRegistry();
     
     // The resources
-    environment.jersey().register(new UploadResource(dir));
+    environment.jersey().register(new FilesResource(registry, dir.toPath()));
+    environment.jersey().register(new WorkersResource(registry));
     environment.jersey().register(new JSONResource(configuration.liveDB));
     environment.jersey().register(info);
   }

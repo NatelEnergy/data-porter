@@ -1,12 +1,18 @@
 package com.natelenergy.porter.model;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
-import com.google.common.io.Files;
+import com.google.common.io.MoreFiles;
 
 /**
  * This vaguely matches the NGINX json output
@@ -21,31 +27,27 @@ public class FileUploadInfo {
   public long mtime;
   public String md5;
   
-  public static FileUploadInfo make(File f, String root, boolean hash, boolean showPath) throws IOException
+  public static FileUploadInfo make(Path f, Path root, boolean hash) throws IOException
   {
     FileUploadInfo info = new FileUploadInfo();
-    info.size = f.length();
-    
-    if(showPath) {
-      String abs = f.getAbsolutePath();
-      if(abs.length()>root.length()) {
-        info.path = f.getAbsolutePath().substring(root.length()+1).replace('\\', '/');
-      }
-      else {
-        info.path = "?";
-      }
+
+    if(root != null) {
+      info.path = root.relativize(f).toString().replace('\\', '/');
     }
     else {
-      info.name = f.getName();
+      info.name = f.getFileName().toString();
     }
     
-    if(f.exists()) {
-      info.mtime = f.lastModified();
-      if(f.isDirectory()) {
+    if(Files.exists(f)) {
+      BasicFileAttributes attrs = Files.readAttributes(f, BasicFileAttributes.class);
+      info.size = attrs.size();
+      info.mtime = attrs.lastModifiedTime().toMillis();
+      
+      if(attrs.isDirectory()) {
         info.type = "directory";
       }
       else if(hash) {
-        HashCode md5 = Files.asByteSource(f).hash(Hashing.md5());
+        HashCode md5 = MoreFiles.asByteSource(f).hash(Hashing.md5());
         info.md5 = md5.toString();
       }
     }
@@ -55,12 +57,13 @@ public class FileUploadInfo {
     return info;
   }
 
-  public static FileUploadInfo[] list(File dir) throws IOException {
-    File[] files = dir.listFiles();
-    FileUploadInfo[] info = new FileUploadInfo[files.length];
-    for(int i=0; i<files.length; i++) {
-      info[i] = make(files[i], "", false, false);
-    }
-    return info;
+  public static List<FileUploadInfo> list(Path dir) throws IOException {
+    List<FileUploadInfo> infos = new ArrayList<>();
+    try (DirectoryStream<Path> dirs = Files.newDirectoryStream(dir)) {
+      for (Path sub : dirs) {
+        infos.add(make(sub, null, false));
+      }
+    } catch (IOException ex) {}
+    return infos;
   }
 }

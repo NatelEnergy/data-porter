@@ -5,7 +5,8 @@
 </head>
 <body>
     <h1>Upload File with Dropwizard</h1>
-    <form action="/upload/file/form/path" method="post" enctype="multipart/form-data">
+    <form action="/files/upload" method="post" enctype="multipart/form-data">
+       <input type="text" name="folder" value="path/to/folder" />
        <p>
         Choose a file: <input type="file" name="file" />
        </p>
