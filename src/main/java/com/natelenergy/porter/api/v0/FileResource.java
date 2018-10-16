@@ -22,6 +22,8 @@ import java.io.*;
 import java.lang.invoke.MethodHandles;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
+import java.util.List;
+
 import io.swagger.annotations.*;
 
 @Path("/file")
@@ -121,9 +123,12 @@ public class FileResource {
       }
       
       // Check for streaming
-      for(String s : headers.getRequestHeader("Transfer-Encoding") ) {
-        if("chunked".equals(s)) {
-          stream = true;
+      List<String> enc = headers.getRequestHeader("Transfer-Encoding");
+      if(enc!=null) {
+        for(String s :  enc ) {
+          if("chunked".equals(s)) {
+            stream = true;
+          }
         }
       }
       LOGGER.info("HEADERS: "+headers.getRequestHeaders());
