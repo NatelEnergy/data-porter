@@ -165,8 +165,10 @@ public class FileResource {
     FileWorker fp = createFileProcessor(path, p, stream);
     if(stream) {
       LOGGER.info("STREAM: "+path);
-      w.child = fp;
-      workers.start(w.child);
+      if(fp!=null) {
+        w.child = fp;
+        workers.start(w.child);
+      }
       workers.run(w);
     }
     else {
@@ -174,7 +176,7 @@ public class FileResource {
       workers.run(w);
 
       // If it uploaded OK, then queue processor
-      if(w.is( State.FINISHED) ) {
+      if(fp != null && w.is( State.FINISHED) ) {
         workers.queue(fp);
       }
     }
