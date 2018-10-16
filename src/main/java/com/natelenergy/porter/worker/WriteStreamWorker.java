@@ -1,6 +1,5 @@
 package com.natelenergy.porter.worker;
 import java.nio.file.StandardOpenOption;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -28,7 +27,11 @@ public class WriteStreamWorker extends FileWorker {
   @Override
   public void doRun() throws IOException {
     Path dir = f.getParent();
-    Files.createDirectories(dir);
+    if( !Files.exists(dir) ) {
+      Files.createDirectories(dir);
+    }
+    
+    // Replace the existing file
     Files.deleteIfExists(f);
     
     long cursor = 0;

@@ -12,6 +12,7 @@ import com.natelenergy.porter.views.FileView;
 import com.natelenergy.porter.worker.FileWorker;
 import com.natelenergy.porter.worker.ProcessStreamingFileWorker;
 import com.natelenergy.porter.worker.FileWorkerStatus.State;
+import com.natelenergy.porter.worker.ProcessFileWorker;
 import com.natelenergy.porter.worker.WorkerRegistry;
 import com.natelenergy.porter.worker.WriteStreamWorker;
 
@@ -39,7 +40,9 @@ public class FileResource {
     this.mapper.enable(SerializationFeature.INDENT_OUTPUT);
     
     try {
-      Files.createDirectories(root);
+      if(!Files.exists(root)) {
+        Files.createDirectories(root);
+      }
     }
     catch(Exception ex) {
       LOGGER.warn("Unable to create root directory: "+root, ex);
@@ -121,9 +124,10 @@ public class FileResource {
     
     final java.nio.file.Path p = root.resolve(path);
     WriteStreamWorker w = new WriteStreamWorker(path, p, data, length);
+    FileWorker fp = createFileProcessor(path, p, stream);
     if(stream) {
       LOGGER.info("STREAM: "+path);
-      w.child = createFileProcessor(path, p, true);
+      w.child = fp;
       workers.start(w.child);
       workers.run(w);
     }
@@ -133,7 +137,7 @@ public class FileResource {
 
       // If it uploaded OK, then queue processor
       if(w.is( State.FINISHED) ) {
-        workers.queue(createFileProcessor(path, p, false));
+        workers.queue(fp);
       }
     }
     return FileUploadInfo.make(p, root, true);
@@ -157,6 +161,10 @@ public class FileResource {
   
   // TODO??? This should select the smarts on what to do
   public FileWorker createFileProcessor(String path, java.nio.file.Path p, boolean stream) {
-    return new ProcessStreamingFileWorker(path, p, stream);
+    if(stream) {
+      return new ProcessStreamingFileWorker(path, p);
+    }
+    return new ProcessFileWorker(path, p);
+    
   }
 }

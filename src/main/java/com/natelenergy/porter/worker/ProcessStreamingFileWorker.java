@@ -1,20 +1,19 @@
 package com.natelenergy.porter.worker;
-import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Random;
+
+import com.natelenergy.porter.worker.FileWorkerStatus.State;
 
 public class ProcessStreamingFileWorker extends FileWorker {
   
   protected final Path f;
   protected final FileWorkerStatus status;
-  protected final boolean waitForNudge;
  
   protected FileWorkerStatus.State nudgedState = null;
-  protected boolean nudged = false;
   
-  public ProcessStreamingFileWorker(String path, Path dest, boolean waitForNudge) {
+  public ProcessStreamingFileWorker(String path, Path dest) {
     status = new FileWorkerStatus(this, path);
     this.f = dest;
-    this.waitForNudge = waitForNudge;
   }
 
   @Override
@@ -25,11 +24,16 @@ public class ProcessStreamingFileWorker extends FileWorker {
   @Override
   public void nudge(FileWorkerStatus.State state) {
     this.nudgedState = state;
-    nudged = true;
   }
 
   @Override
-  public void doRun() throws IOException {
-    
+  public void doRun() throws Exception {
+    while(true) {
+      LOGGER.info("TODO, read: "+f + " // " + this.nudgedState);
+      Thread.sleep(2000 + new Random().nextInt(2000));
+      if(nudgedState == State.FINISHED) {
+        return;
+      }
+    }
   }
 }
