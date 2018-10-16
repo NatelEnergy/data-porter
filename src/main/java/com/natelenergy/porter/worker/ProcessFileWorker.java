@@ -1,15 +1,13 @@
 package com.natelenergy.porter.worker;
-import java.nio.file.Path;
-import java.util.Random;
 
 public class ProcessFileWorker extends FileWorker {
   
-  protected final Path f;
   protected final FileWorkerStatus status;
+  protected final FileIndexer indexer;
   
-  public ProcessFileWorker(String path, Path dest) {
+  public ProcessFileWorker(String path, FileIndexer indexer) {
     status = new FileWorkerStatus(this, path);
-    this.f = dest;
+    this.indexer = indexer;
   }
 
   @Override
@@ -17,10 +15,8 @@ public class ProcessFileWorker extends FileWorker {
     return status;
   }
 
-
   @Override
   public void doRun() throws Exception {
-    LOGGER.info("TODO, process: "+ f );
-    Thread.sleep(2000 + new Random().nextInt(2000));
+    this.indexer.process(this.status);
   }
 }

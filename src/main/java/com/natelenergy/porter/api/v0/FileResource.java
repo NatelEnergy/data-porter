@@ -9,6 +9,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.natelenergy.porter.model.FileUploadInfo;
 import com.natelenergy.porter.views.FileView;
+import com.natelenergy.porter.worker.FileIndexer;
+import com.natelenergy.porter.worker.FileIndexerAvro;
+import com.natelenergy.porter.worker.FileIndexerCSV;
 import com.natelenergy.porter.worker.FileWorker;
 import com.natelenergy.porter.worker.ProcessStreamingFileWorker;
 import com.natelenergy.porter.worker.FileWorkerStatus.State;
@@ -178,13 +181,21 @@ public class FileResource {
     return FileUploadInfo.make(p, root, true);
   }
   
-  
-  // TODO??? This should select the smarts on what to do
   public FileWorker createFileProcessor(String path, java.nio.file.Path p, boolean stream) {
-    if(stream) {
-      return new ProcessStreamingFileWorker(path, p);
+    FileIndexer indexer = null;
+    if(path.endsWith(".avro")) {
+      indexer = new FileIndexerAvro(p);
     }
-    return new ProcessFileWorker(path, p);
+    else if(path.endsWith(".csv")) {
+      indexer = new FileIndexerCSV(p);
+    }
     
+    if(indexer != null) {
+      if(stream) {
+        return new ProcessStreamingFileWorker(path, indexer);
+      }
+      return new ProcessFileWorker(path, indexer);
+    }
+    return null;
   }
 }

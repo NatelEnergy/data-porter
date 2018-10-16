@@ -37,10 +37,13 @@ public class FileWorkerStatus {
   // File Size stuff
   public Long size;
   public Long cursor;
+  
+  // Data info
+  public Long count;
+  public Long time;
 
   // Timing Info
   public final Long queued;
-  public Long touched;
   public Long started;
   public Long finished;
   
