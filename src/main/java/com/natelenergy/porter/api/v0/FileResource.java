@@ -126,13 +126,13 @@ public class FileResource {
     WriteStreamWorker w = new WriteStreamWorker(path, p, data, length);
     FileWorker fp = createFileProcessor(path, p, stream);
     if(stream) {
-      LOGGER.info("STREAM: "+path);
+      LOGGER.info("STREAM: "+path + " ("+length+")");
       w.child = fp;
       workers.start(w.child);
       workers.run(w);
     }
     else {
-      LOGGER.info("UPLOAD: "+path);
+      LOGGER.info("UPLOAD: "+path + " ("+length+")");
       workers.run(w);
 
       // If it uploaded OK, then queue processor
