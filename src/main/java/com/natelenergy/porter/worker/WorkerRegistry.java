@@ -11,10 +11,9 @@ import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.natelenergy.porter.worker.FileWorkerStatus.State;
+import com.natelenergy.porter.model.SafeCounter;
 
 public class WorkerRegistry {
 
@@ -24,8 +23,7 @@ public class WorkerRegistry {
   
   private Map<FileWorker,FileWorker> active = new ConcurrentHashMap<>();
 
-  private Map<String,AtomicInteger> failed = new ConcurrentHashMap<>();
-  private Map<String,AtomicInteger> finished = new ConcurrentHashMap<>();
+  private SafeCounter counter = new SafeCounter();
   private FileWorkerStatus[] history = new FileWorkerStatus[20];
   private int historyIndex = 0;
   
@@ -54,18 +52,8 @@ public class WorkerRegistry {
           }
         }
         
-        if(worker.is(State.FAILED)) {
-          AtomicInteger v = failed.putIfAbsent(s.worker, new AtomicInteger(1));
-          if(v!=null) {
-            v.incrementAndGet();
-          }
-        }
-        else {
-          AtomicInteger v = finished.putIfAbsent(s.worker, new AtomicInteger(1));
-          if(v!=null) {
-            v.incrementAndGet();
-          }
-        }
+        // Increment counter
+        counter.increment(s.worker, s.state.toString());
       }
     }
   }
@@ -89,8 +77,7 @@ public class WorkerRegistry {
     public List<FileWorkerStatus> active;
     public List<FileWorkerStatus> history;
 
-    public Map<String,AtomicInteger> finished;
-    public Map<String,AtomicInteger> failed;
+    public Object counter;
   }
   
   public RegistryStatus getStatus()
@@ -108,12 +95,7 @@ public class WorkerRegistry {
       }
     }
     s.queued = buffer.size();
-    if(this.finished.size()>0) {
-      s.finished = this.finished;
-    }
-    if(this.failed.size()>0) {
-      s.failed = this.failed;
-    }
+    s.counter = this.counter.counter;
     return s;
   }
   

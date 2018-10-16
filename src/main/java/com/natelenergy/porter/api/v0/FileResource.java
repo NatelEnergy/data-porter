@@ -106,41 +106,29 @@ public class FileResource {
   public FileUploadInfo uploadFile(
       @PathParam("path") 
       String path,
-      
-      @QueryParam("stream")
-      @DefaultValue("false")
-      boolean stream,
 
-      @DefaultValue("0")
-      @HeaderParam("Content-Length") 
-      Long length,
+      @Context
+      HttpHeaders headers,
       
       InputStream data) throws IOException 
   {
-    // Remove length if not set
-    if(length != null && length <1) {
-      length = null;
-    }
+    Long length = null;
+    boolean stream = false;
     
-    final java.nio.file.Path p = root.resolve(path);
-    WriteStreamWorker w = new WriteStreamWorker(path, p, data, length);
-    FileWorker fp = createFileProcessor(path, p, stream);
-    if(stream) {
-      LOGGER.info("STREAM: "+path + " ("+length+")");
-      w.child = fp;
-      workers.start(w.child);
-      workers.run(w);
-    }
-    else {
-      LOGGER.info("UPLOAD: "+path + " ("+length+")");
-      workers.run(w);
-
-      // If it uploaded OK, then queue processor
-      if(w.is( State.FINISHED) ) {
-        workers.queue(fp);
+    if(headers != null) {
+      if(headers.getLength()> 1) {
+        length = new Long( headers.getLength() );
       }
+      
+      // Check for streaming
+      for(String s : headers.getRequestHeader("Transfer-Encoding") ) {
+        if("chunked".equals(s)) {
+          stream = true;
+        }
+      }
+      LOGGER.info("HEADERS: "+headers.getRequestHeaders());
     }
-    return FileUploadInfo.make(p, root, true);
+    return doUploadFile(path, stream, length, data);
   }
 
   @POST
@@ -155,7 +143,34 @@ public class FileResource {
       size = fileDetail.getSize();
     }
     String p = "aaaaaa/" +fileDetail.getFileName();
-    return uploadFile(p, false, size, data);
+    return doUploadFile(p, false, size, data);
+  }
+  
+  FileUploadInfo doUploadFile(
+      String path,
+      boolean stream,
+      Long length,
+      InputStream data) throws IOException 
+  {
+    final java.nio.file.Path p = root.resolve(path);
+    WriteStreamWorker w = new WriteStreamWorker(path, p, data, length);
+    FileWorker fp = createFileProcessor(path, p, stream);
+    if(stream) {
+      LOGGER.info("STREAM: "+path);
+      w.child = fp;
+      workers.start(w.child);
+      workers.run(w);
+    }
+    else {
+      LOGGER.info("UPLOAD: "+path + " (Length: "+length+")");
+      workers.run(w);
+
+      // If it uploaded OK, then queue processor
+      if(w.is( State.FINISHED) ) {
+        workers.queue(fp);
+      }
+    }
+    return FileUploadInfo.make(p, root, true);
   }
   
   
