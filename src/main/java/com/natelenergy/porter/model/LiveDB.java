@@ -119,7 +119,19 @@ public class LiveDB {
       for(Map.Entry<String, Object> entry : data.entrySet()) {
         Object v = entry.getValue();
         if(v instanceof Map) {
-          v = new ConcurrentHashMap<>((Map)v);
+          Map<?,?> m = (Map)v;
+          v = new ConcurrentHashMap<>(m.size()+10);
+          for (Map.Entry<?,?> e : m.entrySet()) {
+            if(e.getKey()==null) {
+              LOGGER.warn("Ignore null key: "+v);
+            }
+            else if(e.getValue()==null) {
+              LOGGER.warn("Ignore null value: "+e.getKey() + " // " + data);
+            }
+            else {
+              ((Map) v).put(e.getKey(), e.getValue());
+            }
+          }
         }
         else if(v instanceof Collection) {
           v = new CopyOnWriteArrayList<>((Collection)v);
