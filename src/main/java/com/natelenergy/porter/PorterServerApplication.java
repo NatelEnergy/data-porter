@@ -25,7 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.natelenergy.porter.api.v0.InfoResource;
 import com.natelenergy.porter.api.v0.JSONResource;
 import com.natelenergy.porter.api.v0.WorkersResource;
-import com.natelenergy.porter.api.v0.FilesResource;
+import com.natelenergy.porter.api.v0.FileResource;
 import com.natelenergy.porter.health.SimpleHealthCheck;
 import com.natelenergy.porter.tasks.EchoTask;
 import com.natelenergy.porter.util.IllegalArgumentExceptionMapper;
@@ -115,7 +115,7 @@ public class PorterServerApplication extends Application<PorterServerConfigurati
     WorkerRegistry registry = new WorkerRegistry();
     
     // The resources
-    environment.jersey().register(new FilesResource(registry, dir.toPath()));
+    environment.jersey().register(new FileResource(registry, dir.toPath()));
     environment.jersey().register(new WorkersResource(registry));
     environment.jersey().register(new JSONResource(configuration.liveDB));
     environment.jersey().register(info);

@@ -26,7 +26,7 @@ import io.swagger.annotations.*;
 @Path("/file")
 @Produces(MediaType.APPLICATION_JSON)
 @Api(value="/file", tags="Manage Files")
-public class FilesResource {
+public class FileResource {
   private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final ObjectMapper mapper;
@@ -34,7 +34,7 @@ public class FilesResource {
   
   private final WorkerRegistry workers;
   
-  public FilesResource(WorkerRegistry workers, java.nio.file.Path root) {
+  public FileResource(WorkerRegistry workers, java.nio.file.Path root) {
     this.mapper = new ObjectMapper();
     this.mapper.enable(SerializationFeature.INDENT_OUTPUT);
     
@@ -100,62 +100,60 @@ public class FilesResource {
   
   @POST
   @Path("upload/{path : (.+)?}")
-  public FileUploadInfo streamFile(
+  public FileUploadInfo uploadFile(
       @PathParam("path") 
       String path,
       
       @QueryParam("stream")
       @DefaultValue("false")
       boolean stream,
-      
-      @Context 
-      HttpHeaders headers,
+
+      @DefaultValue("0")
+      @HeaderParam("Content-Length") 
+      Long length,
       
       InputStream data) throws IOException 
   {
-    java.nio.file.Path p = root.resolve(path);
+    // Remove length if not set
+    if(length != null && length <1) {
+      length = null;
+    }
     
+    final java.nio.file.Path p = root.resolve(path);
+    WriteStreamWorker w = new WriteStreamWorker(path, p, data, length);
     if(stream) {
-      Long length = null;
-      int len = headers.getLength();
-      if(len > 0) {
-        length = new Long(len);
-      }
-      
-      WriteStreamWorker w = new WriteStreamWorker(path, p, data, length);
+      LOGGER.info("STREAM: "+path);
       w.child = createFileProcessor(path, p, true);
       workers.start(w.child);
       workers.run(w);
-      return FileUploadInfo.make(p, root, true);
     }
-    return doUpload(p, data, null);
+    else {
+      LOGGER.info("UPLOAD: "+path);
+      workers.run(w);
+
+      // If it uploaded OK, then queue processor
+      if(w.is( State.FINISHED) ) {
+        workers.queue(createFileProcessor(path, p, false));
+      }
+    }
+    return FileUploadInfo.make(p, root, true);
   }
 
   @POST
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Path("upload")
-  public FileUploadInfo uploadFile(
-      
+  public FileUploadInfo multipartUpload(
       @FormDataParam("file") InputStream data,
-      @FormDataParam("file") FormDataContentDisposition fileDetail) throws IOException {
-    
-    java.nio.file.Path p = root.resolve( "aaaaaaaaaaaaa" );
-    p = p.resolve(fileDetail.getFileName());
-    return doUpload(p, data, null);
+      @FormDataParam("file") FormDataContentDisposition fileDetail) throws IOException 
+  {
+    Long size = null;
+    if(fileDetail.getSize() > 1) {
+      size = fileDetail.getSize();
+    }
+    String p = "aaaaaa/" +fileDetail.getFileName();
+    return uploadFile(p, false, size, data);
   }
   
-  private FileUploadInfo doUpload(java.nio.file.Path path, InputStream data, Long length) throws IOException {
-    String rel = root.relativize(path).toString();
-    WriteStreamWorker w = new WriteStreamWorker(
-        rel, path, data, length);
-    workers.run(w);
-
-    // If it uploaded OK, then queue processor
-    if(w.is( State.FINISHED) ) {
-      workers.queue(createFileProcessor(rel, path, false));
-    }
-    return FileUploadInfo.make(path, root, true);
-  }
   
   // TODO??? This should select the smarts on what to do
   public FileWorker createFileProcessor(String path, java.nio.file.Path p, boolean stream) {
