@@ -16,6 +16,8 @@ server:
   applicationConnectors:
     - type: http
       port: 8080
+      idleTimeout: 60 seconds
+      
   adminConnectors:
     - type: http
       port: 8081
