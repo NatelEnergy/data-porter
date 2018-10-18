@@ -52,7 +52,7 @@ public class FileResource {
     catch(Exception ex) {
       LOGGER.warn("Unable to create root directory: "+root, ex);
     }
-    this.root = root;
+    this.root = root.toAbsolutePath();
     this.workers = workers;
   }
   

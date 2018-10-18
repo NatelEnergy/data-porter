@@ -16,7 +16,7 @@ public class ProcessFileWorker extends FileWorker {
   }
 
   @Override
-  public void doRun() throws Exception {
-    this.indexer.process(this.status);
+  public long doRun() throws Exception {
+    return this.indexer.process(this.status);
   }
 }

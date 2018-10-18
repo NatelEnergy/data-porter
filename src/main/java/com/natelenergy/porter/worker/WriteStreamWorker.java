@@ -25,7 +25,7 @@ public class WriteStreamWorker extends FileWorker {
   }
 
   @Override
-  public void doRun() throws IOException {
+  public long doRun() throws IOException {
     Path dir = f.getParent();
     if( !Files.exists(dir) ) {
       Files.createDirectories(dir);
@@ -38,7 +38,7 @@ public class WriteStreamWorker extends FileWorker {
     long ts = System.currentTimeMillis();
     try( OutputStream outStream = Files.newOutputStream(f, 
         StandardOpenOption.CREATE, 
-        StandardOpenOption.WRITE )) 
+        StandardOpenOption.WRITE ))
     {
       byte[] buffer = new byte[8 * 1024];
       int bytesRead;
@@ -58,5 +58,12 @@ public class WriteStreamWorker extends FileWorker {
         }
       }
     }
+    finally {
+      // Remove empty files
+      if(cursor<1) {
+        Files.delete(f);
+      }
+    }
+    return cursor;
   }
 }

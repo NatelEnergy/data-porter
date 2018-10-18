@@ -10,7 +10,7 @@ public abstract class FileWorker implements Runnable {
   protected static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   public abstract FileWorkerStatus getStatus();
-  public abstract void doRun() throws Exception;
+  public abstract long doRun() throws Exception;
 
   public FileWorker child;
   

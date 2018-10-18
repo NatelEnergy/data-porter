@@ -30,7 +30,6 @@ public class FileUploadInfo {
   public static FileUploadInfo make(Path f, Path root, boolean hash) throws IOException
   {
     FileUploadInfo info = new FileUploadInfo();
-
     if(root != null) {
       info.path = root.relativize(f).toString().replace('\\', '/');
     }

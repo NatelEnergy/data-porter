@@ -18,15 +18,17 @@ public class FileIndexerCSV extends FileIndexer {
   }
 
   @Override
-  public void process(FileWorkerStatus status) throws Exception {
+  public long process(FileWorkerStatus status) throws Exception {
     if(!Files.exists(this.file)) {
-      return;
+      return 0;
     }
     
+    long count = 0;
     BasicFileAttributes attrs = Files.readAttributes(this.file, BasicFileAttributes.class);
     if(attrs.isRegularFile() && attrs.size() > lastLine) {
       Thread.sleep(5000);      
       LOGGER.info("TODO, read CSV! "+this.file );
     }
+    return count;
   }
 }

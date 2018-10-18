@@ -15,14 +15,34 @@ public class ProcessStreamingFileWorker extends ProcessFileWorker {
   }
 
   @Override
-  public void doRun() throws Exception {
+  public long doRun() throws Exception {
+    int loops = 0;
+    long count = 0;
+    
     while(true) {
-      super.doRun();
+      long t = 0;
+      try {
+        t = super.doRun();
+      }
+      catch(Exception ex) {
+        if(t>0 || count > 0) {
+          throw ex;
+        }
+        // Ignore errors before we have read anything
+      }
       
-      LOGGER.info("still running... so sleep and try again: "+status.path);
-      Thread.sleep(2000);
+      if(t > 0) {
+        count += t;
+        loops = 0;
+        status.loops = null;
+      }
+      else {
+        status.loops = ++loops;
+      }
+      
+      Thread.sleep(2500);
       if(nudgedState == State.FINISHED || nudgedState == State.FAILED) {
-        return;
+        return count;
       }
     }
   }

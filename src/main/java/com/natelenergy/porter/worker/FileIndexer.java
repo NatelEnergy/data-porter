@@ -11,5 +11,5 @@ public abstract class FileIndexer {
   }
   
   // This *can* get called multple times, so keep track of state outside
-  public abstract void process(FileWorkerStatus status) throws Exception;
+  public abstract long process(FileWorkerStatus status) throws Exception;
 }

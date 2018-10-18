@@ -18,7 +18,7 @@ public class FileIndexerAvro extends FileIndexer {
   protected static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   DatumReader<GenericRecord> datumReader = new GenericDatumReader<>();
-  long lastSync = -1;
+  long lastSync = 0;
   
   public FileIndexerAvro(Path file) {
     super(file);
@@ -26,13 +26,14 @@ public class FileIndexerAvro extends FileIndexer {
   }
 
   @Override
-  public void process(FileWorkerStatus status) throws IOException {
+  public long process(FileWorkerStatus status) throws IOException {
     if(!Files.exists(this.file)) {
-      return;
+      return 0;
     }
-    
+
+    long count = 0;
     BasicFileAttributes attrs = Files.readAttributes(this.file, BasicFileAttributes.class);
-    if(attrs.isRegularFile() && attrs.size() > lastSync) {
+    if(attrs.isRegularFile() && attrs.size() > lastSync) { // Must have a file size
       long total = 0;
       if(status.count!=null) {
         total = status.count;
@@ -52,6 +53,7 @@ public class FileIndexerAvro extends FileIndexer {
         while (dataFileReader.hasNext()) {
           record = dataFileReader.next(record);
           long when = (long)record.get("epoch");
+          count++;
           status.count = total++;
           status.time = when;
           if(total % 1000 == 0) {
@@ -59,8 +61,8 @@ public class FileIndexerAvro extends FileIndexer {
           }
         }
         lastSync = dataFileReader.previousSync();
-        LOGGER.info("finished: "+this.file + " // Count:"+status.count + " // LastSync:"+lastSync );
       }
     }
+    return count;
   }
 }

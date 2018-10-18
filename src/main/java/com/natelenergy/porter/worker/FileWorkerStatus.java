@@ -41,12 +41,12 @@ public class FileWorkerStatus {
   // Data info
   public Long count;
   public Long time;
+  public Integer loops;
 
   // Timing Info
   public final Long queued;
   public Long started;
   public Long finished;
-  
   public List<Message> messages;
   
   
