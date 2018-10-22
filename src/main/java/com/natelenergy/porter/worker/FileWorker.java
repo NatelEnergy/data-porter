@@ -1,6 +1,8 @@
 package com.natelenergy.porter.worker;
 
+import java.io.EOFException;
 import java.lang.invoke.MethodHandles;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,6 +34,11 @@ public abstract class FileWorker implements Runnable {
       s.state = State.RUNNING;
       s.started = System.currentTimeMillis();
       this.doRun();
+    }
+    catch(EOFException ex) {
+      s.addError("Early End of File");
+      s.state = State.FAILED;
+      LOGGER.info("Failed: "+s.path);
     }
     catch(Exception ex) {
       s.addError(ex);

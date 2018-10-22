@@ -3,7 +3,6 @@ package com.natelenergy.porter.worker;
 import java.lang.invoke.MethodHandles;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 
 import org.apache.commons.io.Charsets;

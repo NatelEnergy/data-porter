@@ -32,6 +32,8 @@ public class FileWorkerStatus {
   
   public final String worker;
   public final String path;
+  public final FileNameInfo locator; 
+  
   public State state;
   
   // File Size stuff
@@ -55,6 +57,7 @@ public class FileWorkerStatus {
     this.path = path.replace('\\', '/');
     this.queued = System.currentTimeMillis();
     this.state = State.QUEUED;
+    this.locator = FileNameInfo.parse(path);
   }
   
   public void addMessage(Message msg) {
@@ -62,6 +65,12 @@ public class FileWorkerStatus {
       this.messages = new ArrayList<>();
     }
     this.messages.add(msg);
+  }
+
+  public void addError(String ex) {
+    Message m = new Message();
+    m.text = ex;
+    addMessage(m);
   }
   
   public void addError(Exception ex) {

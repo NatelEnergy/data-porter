@@ -119,7 +119,6 @@ public class FileResource {
   {
     Long length = null;
     boolean stream = false;
-    
     if(headers != null) {
       if(headers.getLength()> 1) {
         length = new Long( headers.getLength() );
@@ -134,7 +133,6 @@ public class FileResource {
           }
         }
       }
-      LOGGER.info("HEADERS: "+headers.getRequestHeaders());
     }
     return doUploadFile(path, stream, length, data);
   }
