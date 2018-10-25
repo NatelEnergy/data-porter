@@ -1,6 +1,18 @@
 swagger:
-  resourcePackage: tech.upstream.excel
-  
+  resourcePackage: com.natelenergy.porter
+  swaggerViewConfiguration:
+    showApiSelector: false
+    showAuth: false  
+    pageTitle: Data Porter API
+
+repos:
+  store: data/store
+  meta: data/meta
+  init:
+    - test
+    - aaa
+    - bbb
+    
 server:
   applicationConnectors:
     - type: http
