@@ -57,6 +57,10 @@ public class RepoResource {
     info,
     debug
   }
+
+  public static enum Action {
+    queue,
+  }
   
   private final Registry registry;
   
@@ -172,16 +176,15 @@ public class RepoResource {
       @PathParam("path") 
       String path,
       
-      @DefaultValue("false")
-      @QueryParam("queue")
-      boolean queue,
+      @QueryParam("action")
+      Action action,
 
       @Context
       HttpHeaders headers,
       
       InputStream data) throws IOException 
   {
-    if(queue) {
+    if(action == Action.queue) {
       return queueFile(instance, path);
     }
     
@@ -193,13 +196,17 @@ public class RepoResource {
       }
       
       // Check for streaming
-      List<String> enc = headers.getRequestHeader("Transfer-Encoding");
-      if(enc!=null) {
-        for(String s :  enc ) {
+      List<String> vals = headers.getRequestHeader("Transfer-Encoding");
+      if(vals!=null) {
+        for(String s :  vals ) {
           if("chunked".equals(s)) {
             stream = true;
           }
         }
+      }
+      
+      if( headers.getMediaType() == null ) {
+        return Response.status(Status.BAD_REQUEST).entity("Missing Media Type").build();
       }
     }
     return doUploadFile(instance, path, stream, length, data);
