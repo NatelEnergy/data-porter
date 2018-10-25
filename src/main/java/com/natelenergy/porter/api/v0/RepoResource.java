@@ -311,7 +311,11 @@ public class RepoResource {
       String instance,
 
       @PathParam("path") 
-      String path
+      String path,
+
+      @DefaultValue("false")
+      @QueryParam("last") 
+      boolean andLast
       ) throws Exception {
     
     SignalRepo porter = registry.repos.get(instance);
@@ -322,6 +326,14 @@ public class RepoResource {
     Object rsp = porter.json.get(path);
     if(rsp==null) {
       return Response.noContent().build();
+    }
+    
+    // Also get the last values!
+    if(andLast) {
+      Map<String, Object> res = new HashMap<String,Object>();
+      res.put("json", rsp);
+      res.put("last", porter.last.getDB(null));
+      rsp = res;
     }
     return Response.ok(rsp).build();
   }
