@@ -1,13 +1,18 @@
 package com.natelenergy.porter.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
+import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import com.natelenergy.porter.processor.FileNameInfo;
 
-public interface NamingConvention {
-  public FileNameInfo read(String path);
+@JsonInclude(Include.NON_NULL)
+@JsonTypeInfo(use=Id.CLASS, include=As.PROPERTY, property="@type")
+public abstract class NamingConvention {
+  public abstract FileNameInfo read(String path);
   
-  public static class Standard implements NamingConvention {
-    public String pattern = "{site}-{date}-{channel}";
-    
+  public static class Standard extends NamingConvention {
     @Override
     public FileNameInfo read(String path) {
       int idx = path.lastIndexOf('/');

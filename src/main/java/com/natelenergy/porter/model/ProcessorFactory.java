@@ -7,9 +7,16 @@ import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
 import org.influxdb.dto.Query;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
+import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import com.natelenergy.porter.processor.FileNameInfo;
 import com.natelenergy.porter.processor.ValueProcessor;
 
+@JsonInclude(Include.NON_NULL)
+@JsonTypeInfo(use=Id.CLASS, include=As.PROPERTY, property="@type")
 public abstract class ProcessorFactory {
   
   public String id;
