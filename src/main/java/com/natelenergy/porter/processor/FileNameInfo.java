@@ -1,14 +1,14 @@
-package com.natelenergy.porter.worker;
+package com.natelenergy.porter.processor;
 
 public class FileNameInfo {
-  public final String db;
-  public final String table;
+  public final String site;
+  public final String channel;
   public final String date;
   
   public FileNameInfo(String d, String t, String table) {
-    this.db = d;
+    this.site = d;
     this.date = t;
-    this.table = table;
+    this.channel = table;
   }
   
   public static FileNameInfo parse(String name)

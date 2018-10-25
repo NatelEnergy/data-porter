@@ -1,11 +1,10 @@
 package com.natelenergy.porter.worker;
 
 public class ProcessFileWorker extends FileWorker {
-  
   protected final FileWorkerStatus status;
-  protected final FileIndexer indexer;
+  protected final ProcessingReader indexer;
   
-  public ProcessFileWorker(String path, FileIndexer indexer) {
+  public ProcessFileWorker(String path, ProcessingReader indexer) {
     status = new FileWorkerStatus(this, path);
     this.indexer = indexer;
   }

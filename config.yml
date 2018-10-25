@@ -2,13 +2,28 @@ swagger:
   resourcePackage: com.natelenergy.porter
   swaggerViewConfiguration:
     showApiSelector: false
-    showAuth: false	
+    showAuth: false  
     pageTitle: Data Porter API
 
 liveDB:
-    store: file
-    path: data/json
-    saveInterval: 6000
+  store: file
+  path: data/json
+  saveInterval: 6000
+
+processing:
+  - path:     dev/NATEL-RBM-W541/BigLoop
+    siteKey:  BigLoop_DEV
+    influx:   http://localhost:8086/bbb/
+    username: x
+    password: y
+    database: bbb
+
+  - path:     aaa/ccc
+    siteKey:  BigLoop_CCC
+    influx:   http://localhost:8086/bbb/
+    username: x
+    password: y
+    database: ccc
     
 server:
 #  softNofileLimit: 1000

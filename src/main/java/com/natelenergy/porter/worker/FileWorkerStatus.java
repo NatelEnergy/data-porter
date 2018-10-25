@@ -32,7 +32,6 @@ public class FileWorkerStatus {
   
   public final String worker;
   public final String path;
-  public final FileNameInfo locator; 
   
   public State state;
   
@@ -51,13 +50,11 @@ public class FileWorkerStatus {
   public Long finished;
   public List<Message> messages;
   
-  
   public FileWorkerStatus(FileWorker worker, String path) {
     this.worker = (worker==null)? "<none>" : worker.getClass().getSimpleName();
     this.path = path.replace('\\', '/');
     this.queued = System.currentTimeMillis();
     this.state = State.QUEUED;
-    this.locator = FileNameInfo.parse(path);
   }
   
   public void addMessage(Message msg) {

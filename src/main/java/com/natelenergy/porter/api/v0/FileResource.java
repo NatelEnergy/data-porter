@@ -7,11 +7,13 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.google.common.base.Strings;
 import com.natelenergy.porter.model.FileUploadInfo;
+import com.natelenergy.porter.processor.LastValueDB;
+import com.natelenergy.porter.processor.LastValueDB.LastValue;
+import com.natelenergy.porter.processor.ProcessingInfo;
+import com.natelenergy.porter.processor.Processors;
 import com.natelenergy.porter.views.FileView;
-import com.natelenergy.porter.worker.FileIndexer;
-import com.natelenergy.porter.worker.FileIndexerAvro;
-import com.natelenergy.porter.worker.FileIndexerCSV;
 import com.natelenergy.porter.worker.FileWorker;
 import com.natelenergy.porter.worker.ProcessStreamingFileWorker;
 import com.natelenergy.porter.worker.FileWorkerStatus.State;
@@ -26,6 +28,7 @@ import java.lang.invoke.MethodHandles;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.util.List;
+import java.util.function.Predicate;
 
 import io.swagger.annotations.*;
 
@@ -36,24 +39,15 @@ public class FileResource {
   private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final ObjectMapper mapper;
-  private final java.nio.file.Path root;
   
   private final WorkerRegistry workers;
+  private final Processors processors;
   
-  public FileResource(WorkerRegistry workers, java.nio.file.Path root) {
+  public FileResource(WorkerRegistry workers, Processors processors) {
     this.mapper = new ObjectMapper();
     this.mapper.enable(SerializationFeature.INDENT_OUTPUT);
-    
-    try {
-      if(!Files.exists(root)) {
-        Files.createDirectories(root);
-      }
-    }
-    catch(Exception ex) {
-      LOGGER.warn("Unable to create root directory: "+root, ex);
-    }
-    this.root = root.toAbsolutePath();
     this.workers = workers;
+    this.processors = processors;
   }
   
   @GET
@@ -64,16 +58,58 @@ public class FileResource {
   }
 
   @GET
+  @Path("last")
+  public Response getLastDBs() throws IOException {
+    return Response.ok( processors.getLastDBs() ).build();
+  }
+
+  @GET
+  @Path("last/{key}")
+  public Response getLastValues(
+      @PathParam("key") 
+      String key,
+      
+      @QueryParam("field")
+      final String field
+      ) throws IOException {
+    
+    LastValueDB db = processors.getLastDB(key);
+    if(db==null) {
+      return Response.noContent().build();
+    }
+    
+    if(Strings.isNullOrEmpty(field)) {
+      return Response.ok( db.getDB(null) ).build();
+    }
+    else if(field.endsWith("*")) {
+      return Response.ok( db.getDB( new Predicate<String>() {
+        final String pfix = field.substring(0, field.length()-1);
+
+        @Override
+        public boolean test(String t) {
+          return t.startsWith(pfix);
+        }
+      })).build();
+    }
+    
+    LastValue val = db.get(field);
+    if(val == null) {
+      return Response.noContent().build();
+    }
+    return Response.ok( val ).build();
+  }
+
+  @GET
   @Path("browse/{path : (.+)?}")
   public Response uploadFile(
       @PathParam("path") 
       String path) throws IOException {
 
-    java.nio.file.Path p = root.resolve(path);
+    java.nio.file.Path p = processors.resolve(path);
     if(Files.isDirectory(p)) {
       return Response.ok( FileUploadInfo.list(p) ).build();
     }
-    return Response.ok(FileUploadInfo.make(p, root, true)).build();
+    return Response.ok(FileUploadInfo.make(p, processors.getRoot(), true)).build();
   }
 
   @POST
@@ -82,25 +118,30 @@ public class FileResource {
       @PathParam("path") 
       String path) throws IOException {
 
-    java.nio.file.Path p = root.resolve(path);
+    java.nio.file.Path p = processors.resolve(path);
     if(!Files.exists(p)) {
       return Response.noContent().build();
     }
     
-    
     if(Files.isDirectory(p)) {
       // Queue all files in the directory
       Files.walk(p, FileVisitOption.FOLLOW_LINKS ).forEach( s -> {
-        String rel = root.relativize(s).toString();
-        workers.queue(createFileProcessor(rel, s, false));
+        String rel = processors.getRoot().relativize(s).toString().replace('\\', '/');
+        ProcessingInfo x = processors.get(rel, false);
+        if(x.processor != null) {
+          workers.queue(new ProcessFileWorker(rel, x.reader));
+        }
       });
     }
     else {
-      workers.queue(createFileProcessor(path, p, false));
+      ProcessingInfo x = processors.get(path, false);
+      if(x.processor != null) {
+        workers.queue(new ProcessFileWorker(path, x.reader));
+      }
     }
     
     try {
-      Thread.sleep(10);
+      Thread.sleep(25);
     } 
     catch (InterruptedException e) {}
     return workers.getStatus();
@@ -152,15 +193,35 @@ public class FileResource {
     return doUploadFile(p, false, size, data);
   }
   
+
+  @GET
+  @Path("info/{path : (.+)?}")
+  public Response getInfo(
+      @PathParam("path") 
+      String path) throws IOException {
+
+    ProcessingInfo ppp = processors.get(path, false);
+    return Response.ok(ppp).build();
+  }
+  
   FileUploadInfo doUploadFile(
       String path,
       boolean stream,
       Long length,
       InputStream data) throws IOException 
   {
-    final java.nio.file.Path p = root.resolve(path);
-    WriteStreamWorker w = new WriteStreamWorker(path, p, data, length);
-    FileWorker fp = createFileProcessor(path, p, stream);
+    ProcessingInfo info = processors.get(path, stream);
+    WriteStreamWorker w = new WriteStreamWorker(path, info.file, data, length);
+    FileWorker fp = null;
+    if(info.reader != null) {
+      if(stream) {
+        fp = new ProcessStreamingFileWorker(path, info.reader);
+      }
+      else {
+        fp = new ProcessFileWorker(path, info.reader);
+      }
+    }
+    
     if(stream) {
       LOGGER.info("STREAM: "+path);
       if(fp!=null) {
@@ -178,24 +239,6 @@ public class FileResource {
         workers.queue(fp);
       }
     }
-    return FileUploadInfo.make(p, root, true);
-  }
-  
-  public FileWorker createFileProcessor(String path, java.nio.file.Path p, boolean stream) {
-    FileIndexer indexer = null;
-    if(path.endsWith(".avro")) {
-      indexer = new FileIndexerAvro(p);
-    }
-    else if(path.endsWith(".csv")) {
-      indexer = new FileIndexerCSV(p);
-    }
-    
-    if(indexer != null) {
-      if(stream) {
-        return new ProcessStreamingFileWorker(path, indexer);
-      }
-      return new ProcessFileWorker(path, indexer);
-    }
-    return null;
+    return FileUploadInfo.make(info.file, processors.getRoot(), true);
   }
 }

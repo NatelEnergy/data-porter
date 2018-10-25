@@ -21,12 +21,12 @@ import org.slf4j.LoggerFactory;
 
 import com.bazaarvoice.dropwizard.redirect.PathRedirect;
 import com.bazaarvoice.dropwizard.redirect.RedirectBundle;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.natelenergy.porter.api.v0.InfoResource;
 import com.natelenergy.porter.api.v0.JSONResource;
 import com.natelenergy.porter.api.v0.WorkersResource;
 import com.natelenergy.porter.api.v0.FileResource;
 import com.natelenergy.porter.health.SimpleHealthCheck;
+import com.natelenergy.porter.processor.Processors;
 import com.natelenergy.porter.tasks.EchoTask;
 import com.natelenergy.porter.util.IllegalArgumentExceptionMapper;
 import com.natelenergy.porter.worker.WorkerRegistry;
@@ -102,20 +102,19 @@ public class PorterServerApplication extends Application<PorterServerConfigurati
     environment.jersey().register(RolesAllowedDynamicFeature.class);
     environment.jersey().register(MultiPartFeature.class);
     
-    
-    ObjectMapper mapper = environment.getObjectMapper();
+    // ObjectMapper mapper = environment.getObjectMapper();
     InfoResource info = new InfoResource();
     LOGGER.info("Loading: \n"
         + ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
         + ">>  "+info.getGitDescription()+"\n>>\n"
         + ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" );
     
-    
     File dir = new File("data/upload");
     WorkerRegistry registry = new WorkerRegistry();
+    Processors processing = new Processors(dir.toPath(), configuration.processing);
     
     // The resources
-    environment.jersey().register(new FileResource(registry, dir.toPath()));
+    environment.jersey().register(new FileResource(registry, processing));
     environment.jersey().register(new WorkersResource(registry));
     environment.jersey().register(new JSONResource(configuration.liveDB));
     environment.jersey().register(info);

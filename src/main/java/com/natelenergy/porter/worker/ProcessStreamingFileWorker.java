@@ -5,7 +5,7 @@ public class ProcessStreamingFileWorker extends ProcessFileWorker {
   
   protected FileWorkerStatus.State nudgedState = null;
   
-  public ProcessStreamingFileWorker(String path, FileIndexer indexer) {
+  public ProcessStreamingFileWorker(String path, ProcessingReader indexer) {
     super(path,indexer);
   }
 

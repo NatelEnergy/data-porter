@@ -39,7 +39,7 @@ public class IntegrationTest {
     // RULE.getApplication().run("db", "migrate", CONFIG_PATH);
     //LOCATOR = new WorkbookLocator(Files.createTempDirectory("xls-test").toFile(), RULE.getObjectMapper() );
     WorkerRegistry reg = new WorkerRegistry();
-    EXAMPLES = new FileResource( reg, new File("data/test/upload" ).toPath());
+    EXAMPLES = new FileResource( reg, null );
   }
 
   private static String createTempFile() {
