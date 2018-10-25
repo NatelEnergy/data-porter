@@ -4,6 +4,7 @@ import java.lang.invoke.MethodHandles;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Arrays;
 import java.util.function.Supplier;
 
 import org.apache.commons.io.Charsets;
@@ -20,6 +21,20 @@ public class ReaderCSV extends ProcessingReader {
   
   public ReaderCSV(Path file, Supplier<ValueProcessor> processor) {
     super(file, processor);
+  }
+  
+  public static Object parse(String v, String type) {
+    switch(type) {
+    case "BOOL": return Boolean.parseBoolean(v);
+    case "REAL": return Float.parseFloat(v);
+
+    case "LINT":
+    case "LONG": return Long.parseLong(v);
+    
+    case "USINT":
+    case "INT": return Integer.parseInt(v);
+    }
+    return v;
   }
 
   @Override
@@ -41,13 +56,23 @@ public class ReaderCSV extends ProcessingReader {
       {
         String[] line = reader.readNext();
         while(line != null) {
-          
-          System.out.println( "LINE: "+line );
+          if(line.length>0 && !line[0].startsWith("#")) {
+            if(line.length==4) {
+              long when = Long.parseLong(line[0]);
+              processor.write(when, line[1], parse(line[2], line[3]));
+            }
+            else {
+              LOGGER.warn("SKIP: "+Arrays.asList(line));
+            }
+          }
           
           line = reader.readNext();
         }
         attrs = Files.readAttributes(this.file, BasicFileAttributes.class);
         status.cursor = lastSize = attrs.size();
+      }
+      finally {
+        processor.flush();
       }
     }
     return count;
