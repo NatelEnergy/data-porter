@@ -9,7 +9,6 @@ import io.dropwizard.setup.Environment;
 import io.dropwizard.views.ViewBundle;
 import io.federecio.dropwizard.swagger.*;
 
-import java.io.File;
 import java.lang.invoke.MethodHandles;
 
 import javax.servlet.FilterRegistration;
@@ -22,15 +21,12 @@ import org.slf4j.LoggerFactory;
 import com.bazaarvoice.dropwizard.redirect.PathRedirect;
 import com.bazaarvoice.dropwizard.redirect.RedirectBundle;
 import com.natelenergy.porter.api.v0.InfoResource;
-import com.natelenergy.porter.api.v0.JSONResource;
+import com.natelenergy.porter.api.v0.RepoResource;
 import com.natelenergy.porter.api.v0.WorkersResource;
-import com.natelenergy.porter.api.v0.FileResource;
 import com.natelenergy.porter.health.SimpleHealthCheck;
-import com.natelenergy.porter.processor.Processors;
+import com.natelenergy.porter.model.Registry;
 import com.natelenergy.porter.tasks.EchoTask;
 import com.natelenergy.porter.util.IllegalArgumentExceptionMapper;
-import com.natelenergy.porter.worker.WorkerRegistry;
-
 import org.eclipse.jetty.servlets.CrossOriginFilter;
 import javax.servlet.DispatcherType;
 import java.util.EnumSet;
@@ -109,14 +105,12 @@ public class PorterServerApplication extends Application<PorterServerConfigurati
         + ">>  "+info.getGitDescription()+"\n>>\n"
         + ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" );
     
-    File dir = new File("data/upload");
-    WorkerRegistry registry = new WorkerRegistry();
-    Processors processing = new Processors(dir.toPath(), configuration.processing);
+    
+    Registry reg = new Registry(configuration.repos);
     
     // The resources
-    environment.jersey().register(new FileResource(registry, processing));
-    environment.jersey().register(new WorkersResource(registry));
-    environment.jersey().register(new JSONResource(configuration.liveDB));
+    environment.jersey().register(new RepoResource(reg));
+    environment.jersey().register(new WorkersResource(reg.workers));
     environment.jersey().register(info);
   }
 }

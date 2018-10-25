@@ -5,8 +5,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
-import java.util.function.Supplier;
-
 import org.apache.commons.io.Charsets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,8 +17,8 @@ public class ReaderCSV extends ProcessingReader {
 
   long lastSize = 0;
   
-  public ReaderCSV(Path file, Supplier<ValueProcessor> processor) {
-    super(file, processor);
+  public ReaderCSV(Path file) {
+    super(file);
   }
   
   public static Object parse(String v, String type) {
@@ -38,19 +36,18 @@ public class ReaderCSV extends ProcessingReader {
   }
 
   @Override
-  public long process(FileWorkerStatus status) throws Exception {
+  public long process(FileWorkerStatus status, ValueProcessor processor) throws Exception {
     if(!Files.exists(this.file)) {
       return 0;
     }
+    if(processor == null) {
+      throw new Exception("Missing processor!");
+    }
+   
     
     long count = 0;
     BasicFileAttributes attrs = Files.readAttributes(this.file, BasicFileAttributes.class);
-    if(attrs.isRegularFile() && attrs.size() > lastSize) {
-      ValueProcessor processor = supplier.get();
-      if(processor == null) {
-        throw new Exception("Missing processor!");
-      }
-      
+    if(attrs.isRegularFile() && attrs.size() > lastSize) {   
       status.cursor = lastSize = attrs.size();
       try (CSVReader reader = new CSVReader(Files.newBufferedReader(this.file, Charsets.UTF_8)))
       {

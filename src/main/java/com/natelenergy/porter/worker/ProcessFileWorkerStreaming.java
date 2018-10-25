@@ -1,12 +1,15 @@
 package com.natelenergy.porter.worker;
+import java.util.function.Supplier;
+
+import com.natelenergy.porter.processor.ValueProcessor;
 import com.natelenergy.porter.worker.FileWorkerStatus.State;
 
-public class ProcessStreamingFileWorker extends ProcessFileWorker {
+public class ProcessFileWorkerStreaming extends ProcessFileWorker {
   
   protected FileWorkerStatus.State nudgedState = null;
   
-  public ProcessStreamingFileWorker(String path, ProcessingReader indexer) {
-    super(path,indexer);
+  public ProcessFileWorkerStreaming(String path, ProcessingReader reader, Supplier<ValueProcessor> supplier) {
+    super(path,reader,supplier);
   }
 
   @Override

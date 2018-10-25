@@ -7,8 +7,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import com.natelenergy.porter.api.v0.JSONResource;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.natelenergy.porter.model.LiveDB;
+import com.natelenergy.porter.model.StringBacked.StringBackedConfigSupplier;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -50,9 +51,24 @@ public class LiveDBTest {
 //        assertThat(personCaptor.getValue()).isEqualTo(person);
 //    }
 //
+  
+    public final ObjectMapper mapper = new ObjectMapper();
+    public final StringBackedConfigSupplier cfg = new StringBackedConfigSupplier() {
+
+      @Override
+      public int getSaveInterval() {
+        return 1000;
+      }
+
+      @Override
+      public ObjectMapper getMapper() {
+        return mapper;
+      }
+    };
+  
     @Test
     public void checkDBManipulation() throws Exception {
-      LiveDB db = new LiveDB("test", null, 10);
+      LiveDB db = new LiveDB("test", null, cfg);
       
       Map<String,Object> v = new HashMap<>();
       v.put("one", 1);
@@ -85,14 +101,5 @@ public class LiveDBTest {
 //        verify(PERSON_DAO).findAll();
 //        assertThat(response).containsAll(people);
     }
-    
 
-    @Test
-    public void checkDBNames() throws Exception {
-      assertThat(JSONResource.IsOkDBName("big")).isTrue();
-      assertThat(JSONResource.IsOkDBName("big-loop-xar")).isTrue();
-      assertThat(JSONResource.IsOkDBName("big_loop_xar")).isTrue();
-      assertThat(JSONResource.IsOkDBName("big/loop/xar")).isFalse();
-      assertThat(JSONResource.IsOkDBName("big loop xar")).isFalse();
-    }
 }

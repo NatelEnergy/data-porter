@@ -1,12 +1,18 @@
 package com.natelenergy.porter.worker;
 
+import java.util.function.Supplier;
+
+import com.natelenergy.porter.processor.ValueProcessor;
+
 public class ProcessFileWorker extends FileWorker {
   protected final FileWorkerStatus status;
-  protected final ProcessingReader indexer;
+  protected final ProcessingReader reader;
+  protected final Supplier<ValueProcessor> supplier;
   
-  public ProcessFileWorker(String path, ProcessingReader indexer) {
+  public ProcessFileWorker(String path, ProcessingReader reader, Supplier<ValueProcessor> supplier) {
     status = new FileWorkerStatus(this, path);
-    this.indexer = indexer;
+    this.reader = reader;
+    this.supplier = supplier;
   }
 
   @Override
@@ -16,6 +22,6 @@ public class ProcessFileWorker extends FileWorker {
 
   @Override
   public long doRun() throws Exception {
-    return this.indexer.process(this.status);
+    return this.reader.process(this.status, supplier.get());
   }
 }

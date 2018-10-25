@@ -9,9 +9,7 @@ import org.junit.Test;
 
 import com.natelenergy.porter.PorterServerApplication;
 import com.natelenergy.porter.PorterServerConfiguration;
-import com.natelenergy.porter.api.v0.FileResource;
-import com.natelenergy.porter.worker.WorkerRegistry;
-
+import com.natelenergy.porter.api.v0.InfoResource;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -32,14 +30,13 @@ public class IntegrationTest {
        // ConfigOverride.config("database.url", "jdbc:h2:" + TMP_FILE)
     );
   
-  private static FileResource EXAMPLES;
+  private static InfoResource EXAMPLES;
 
   @BeforeClass
   public static void migrateDb() throws Exception {
     // RULE.getApplication().run("db", "migrate", CONFIG_PATH);
     //LOCATOR = new WorkbookLocator(Files.createTempDirectory("xls-test").toFile(), RULE.getObjectMapper() );
-    WorkerRegistry reg = new WorkerRegistry();
-    EXAMPLES = new FileResource( reg, null );
+    EXAMPLES = new InfoResource();
   }
 
   private static String createTempFile() {

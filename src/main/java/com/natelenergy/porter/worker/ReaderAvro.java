@@ -9,8 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.function.Supplier;
-
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Field;
 import org.apache.avro.Schema.Type;
@@ -31,8 +29,8 @@ public class ReaderAvro extends ProcessingReader {
   DatumReader<GenericRecord> datumReader = new GenericDatumReader<>();
   long lastSync = 0;
   
-  public ReaderAvro(Path file, Supplier<ValueProcessor> processor) {
-    super(file, processor);
+  public ReaderAvro(Path file) {
+    super(file);
   }
   
   public static class FConvert {
@@ -57,22 +55,20 @@ public class ReaderAvro extends ProcessingReader {
   
 
   @Override
-  public long process(FileWorkerStatus status) throws Exception {
+  public long process(FileWorkerStatus status, ValueProcessor processor) throws Exception {
     if(!Files.exists(this.file)) {
       return 0;
     }
-
+    if(processor == null) {
+      throw new Exception("Missing processor!");
+    }
+   
     long count = 0;
     BasicFileAttributes attrs = Files.readAttributes(this.file, BasicFileAttributes.class);
     if(attrs.isRegularFile() && attrs.size() > lastSync) { // Must have a file size
       long total = 0;
       if(status.count!=null) {
         total = status.count;
-      }
-      
-      ValueProcessor processor = supplier.get();
-      if(processor == null) {
-        throw new Exception("Missing processor!");
       }
       
       GenericRecord record = null;

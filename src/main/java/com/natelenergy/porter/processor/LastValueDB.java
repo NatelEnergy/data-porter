@@ -2,6 +2,7 @@ package com.natelenergy.porter.processor;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,8 +22,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.natelenergy.porter.model.StringStore;
 
-public class LastValueDB implements ValueProcessor {
+import joptsimple.internal.Strings;
+
+import com.natelenergy.porter.model.StringBacked;
+
+public class LastValueDB extends StringBacked implements ValueProcessor {
   private long changed = -1;
   
   public static class LastValueSerializer extends JsonSerializer<LastValue> {
@@ -82,10 +88,8 @@ public class LastValueDB implements ValueProcessor {
   
   private final Map<String, LastValue> db = new ConcurrentHashMap<>();
 
-  public final String name;
-  
-  public LastValueDB(String name) {
-    this.name = name;
+  public LastValueDB(String name, StringStore store, StringBackedConfigSupplier cfg) {
+    super(name, store, cfg );
   }
   
   public void load(Map<String, LastValue> vals) {
@@ -153,5 +157,24 @@ public class LastValueDB implements ValueProcessor {
   
   public LastValue get(String field) {
     return db.get(field);
+  }
+
+  @Override
+  protected void load(String str) throws Exception {
+    if(Strings.isNullOrEmpty(str)) {
+      db.clear();
+    }
+    else {
+      this.load(config.getMapper(), new StringReader(str));
+    }
+  }
+
+  @Override
+  protected String getSaveString() throws Exception {
+    return config.getMapper().writeValueAsString(db);
+  }
+
+  public int size() {
+    return db.size();
   }
 }
