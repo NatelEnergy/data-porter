@@ -1,7 +1,7 @@
 package com.natelenergy.porter.worker;
 import java.util.function.Supplier;
 
-import com.natelenergy.porter.processor.ValueProcessor;
+import com.natelenergy.porter.model.ValueProcessor;
 import com.natelenergy.porter.worker.FileWorkerStatus.State;
 
 public class ProcessFileWorkerStreaming extends ProcessFileWorker {

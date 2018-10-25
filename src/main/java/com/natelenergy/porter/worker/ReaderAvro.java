@@ -21,7 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Functions;
-import com.natelenergy.porter.processor.ValueProcessor;
+import com.natelenergy.porter.model.ValueProcessor;
 
 public class ReaderAvro extends ProcessingReader {
   protected static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

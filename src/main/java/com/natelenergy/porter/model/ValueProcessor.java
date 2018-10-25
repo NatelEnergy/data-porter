@@ -1,4 +1,4 @@
-package com.natelenergy.porter.processor;
+package com.natelenergy.porter.model;
 
 import java.util.Map;
 

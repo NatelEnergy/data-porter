@@ -1,4 +1,4 @@
-package com.natelenergy.porter.processor;
+package com.natelenergy.porter.model;
 
 import java.io.StringReader;
 import org.junit.Test;
@@ -6,7 +6,8 @@ import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.natelenergy.porter.processor.LastValueDB.LastValue;
+import com.natelenergy.porter.model.LastValueDB;
+import com.natelenergy.porter.model.LastValueDB.LastValue;
 
 import static org.assertj.core.api.Assertions.*;
 

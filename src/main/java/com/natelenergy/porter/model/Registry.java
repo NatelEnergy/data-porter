@@ -16,8 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.natelenergy.porter.processor.FileNameInfo;
-import com.natelenergy.porter.processor.ValueProcessor;
 import com.natelenergy.porter.worker.ProcessingReader;
 import com.natelenergy.porter.worker.WorkerRegistry;
 
@@ -26,7 +24,7 @@ public class Registry {
   
   public static class PathInfo implements Supplier<ValueProcessor> {
     @JsonIgnore
-    public DataRepo repo;
+    public SignalRepo repo;
     public Path path;
     public FileNameInfo name;
     
@@ -39,7 +37,7 @@ public class Registry {
     }
   }
   
-  public final Map<String,DataRepo> repos = new ConcurrentHashMap<>();
+  public final Map<String,SignalRepo> repos = new ConcurrentHashMap<>();
   public final WorkerRegistry workers = new WorkerRegistry();
  
   private final Path store;
@@ -69,7 +67,7 @@ public class Registry {
     }
   }
   
-  public DataRepo create(String name) {
+  public SignalRepo create(String name) {
     if(!SourceVersion.isName(name)) {
       throw new IllegalArgumentException("must be ok variable name");
     }
@@ -78,7 +76,7 @@ public class Registry {
     }
     
     try {
-      DataRepo p = new DataRepo(name, store, meta);
+      SignalRepo p = new SignalRepo(name, store, meta);
       repos.put(p.id, p);
       return p;
     }
@@ -89,7 +87,7 @@ public class Registry {
   }
 
   public PathInfo get(String instance, String path, boolean complete) {
-    DataRepo p = repos.get(instance);
+    SignalRepo p = repos.get(instance);
     if(p==null) {
       return null;
     }

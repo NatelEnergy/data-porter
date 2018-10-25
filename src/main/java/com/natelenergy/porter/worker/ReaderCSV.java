@@ -9,7 +9,7 @@ import org.apache.commons.io.Charsets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.natelenergy.porter.processor.ValueProcessor;
+import com.natelenergy.porter.model.ValueProcessor;
 import com.opencsv.CSVReader;
 
 public class ReaderCSV extends ProcessingReader {

@@ -1,4 +1,4 @@
-package com.natelenergy.porter.processor;
+package com.natelenergy.porter.model;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -27,11 +27,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.natelenergy.porter.model.StringStore;
 
 import joptsimple.internal.Strings;
-
-import com.natelenergy.porter.model.StringBacked;
 
 @JsonInclude(Include.NON_NULL)
 @JsonTypeInfo(use=Id.CLASS, include=As.PROPERTY, property="@type")

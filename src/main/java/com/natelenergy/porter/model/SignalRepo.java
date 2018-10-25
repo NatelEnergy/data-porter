@@ -14,14 +14,11 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.natelenergy.porter.model.StringBacked.StringBackedConfigSupplier;
-import com.natelenergy.porter.processor.FileNameInfo;
-import com.natelenergy.porter.processor.LastValueDB;
-import com.natelenergy.porter.processor.ValueProcessor;
 import com.natelenergy.porter.worker.ProcessingReader;
 import com.natelenergy.porter.worker.ReaderAvro;
 import com.natelenergy.porter.worker.ReaderCSV;
 
-public class DataRepo implements StringBackedConfigSupplier {
+public class SignalRepo implements StringBackedConfigSupplier {
   private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   public final String id;
@@ -33,9 +30,9 @@ public class DataRepo implements StringBackedConfigSupplier {
   public final Path store;
   
   private final StringStore strings;
-  public final DataRepoConfig config;
+  public final SignalRepoConfig config;
   
-  public DataRepo(String id, Path store, Path strings)
+  public SignalRepo(String id, Path store, Path strings)
   {
     if(!SourceVersion.isName(id)) {
       throw new IllegalArgumentException("Invalid id: "+id);
@@ -47,11 +44,11 @@ public class DataRepo implements StringBackedConfigSupplier {
     this.mapper = new ObjectMapper();
     this.mapper.enable(SerializationFeature.INDENT_OUTPUT);
     
-    DataRepoConfig cfg = null;
+    SignalRepoConfig cfg = null;
     try {
       String json = this.strings.read("config", null);
       if(json!=null) {
-        cfg = mapper.readValue(json, DataRepoConfig.class);
+        cfg = mapper.readValue(json, SignalRepoConfig.class);
       }
     }
     catch(Exception ex) {
@@ -60,7 +57,7 @@ public class DataRepo implements StringBackedConfigSupplier {
     finally {
       boolean save = false;
       if(cfg == null) {
-        cfg = new DataRepoConfig();
+        cfg = new SignalRepoConfig();
         save = true;
       }
       this.config = cfg.validate();
@@ -68,8 +65,9 @@ public class DataRepo implements StringBackedConfigSupplier {
         this.saveConfig();
       }
     }
-    this.json = new JsonDB("db", this.strings, this);
-    this.last = new LastValueDB( id, this.strings, this);
+    
+    this.json = new JsonDB("json", this.strings, this);
+    this.last = new LastValueDB( "last", this.strings, this);
   }
   
   private void saveConfig() {
@@ -119,13 +117,17 @@ public class DataRepo implements StringBackedConfigSupplier {
   }
 
   public ValueProcessor getProcessors(Path path, FileNameInfo name) {
-    
-    List<ValueProcessor> p = new ArrayList<>();
+    List<ValueProcessor> list = new ArrayList<>();
+    list.add(last);
     for(ProcessorFactory f : this.config.processors) {
-      
+      ValueProcessor p = f.create(path, name);
+      if(p!=null) {
+        list.add(p);
+      }
     }
-    // TODO, check influx configs
-    
-    return last;
+    if(list.size()==1) {
+      return list.get(0);
+    }
+    return new ChainedProcessors(list);
   }
 }

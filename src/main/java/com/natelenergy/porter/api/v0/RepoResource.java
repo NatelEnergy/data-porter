@@ -31,10 +31,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Strings;
-import com.natelenergy.porter.model.DataRepo;
+import com.natelenergy.porter.model.SignalRepo;
 import com.natelenergy.porter.model.FileUploadInfo;
 import com.natelenergy.porter.model.Registry;
-import com.natelenergy.porter.processor.LastValueDB.LastValue;
+import com.natelenergy.porter.model.LastValueDB.LastValue;
 import com.natelenergy.porter.worker.FileWorker;
 import com.natelenergy.porter.worker.FileWorkerStatus.State;
 import com.natelenergy.porter.worker.ProcessFileWorker;
@@ -70,7 +70,7 @@ public class RepoResource {
       @PathParam("instance") 
       String instance) throws IOException {
     
-    DataRepo repo = registry.repos.get(instance);
+    SignalRepo repo = registry.repos.get(instance);
     if(repo==null) {
       return Response.status(Status.NOT_FOUND).build();
     }
@@ -80,6 +80,19 @@ public class RepoResource {
     info.put("root", repo.store);
     info.put("last", repo.last.size());
     return Response.ok(info).build();
+  }
+
+  @GET
+  @Path("{instance}/config.json")
+  public Response getRepoConfig(
+      @PathParam("instance") 
+      String instance) throws IOException {
+    
+    SignalRepo repo = registry.repos.get(instance);
+    if(repo==null) {
+      return Response.status(Status.NOT_FOUND).build();
+    }
+    return Response.ok(repo.config).build();
   }
   
   @GET
@@ -262,7 +275,7 @@ public class RepoResource {
       String path
       ) throws Exception {
     
-    DataRepo porter = registry.repos.get(instance);
+    SignalRepo porter = registry.repos.get(instance);
     if(porter==null) {
       return Response.status(Status.NOT_FOUND).build();
     }
@@ -301,7 +314,7 @@ public class RepoResource {
       String path
       ) throws Exception {
     
-    DataRepo porter = registry.repos.get(instance);
+    SignalRepo porter = registry.repos.get(instance);
     if(porter==null) {
       return Response.status(Status.NOT_FOUND).build();
     }
@@ -332,7 +345,7 @@ public class RepoResource {
       Map<String,Object> body
       ) throws Exception {
 
-    DataRepo porter = registry.repos.get(instance);
+    SignalRepo porter = registry.repos.get(instance);
     if(porter ==null) {
       return Response.status(Status.NOT_FOUND).build();
     }

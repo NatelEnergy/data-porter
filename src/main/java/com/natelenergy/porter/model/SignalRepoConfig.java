@@ -4,14 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class DataRepoConfig {
+public class SignalRepoConfig {
   public int saveInterval = 30000; // Every 30 seconds
   
   public NamingConvention name;
   
   public List<ProcessorFactory> processors;
   
-  public DataRepoConfig validate() {
+  public SignalRepoConfig validate() {
     if(name==null) {
       name = new NamingConvention.Standard();
     }

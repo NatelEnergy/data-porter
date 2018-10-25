@@ -2,7 +2,7 @@ package com.natelenergy.porter.worker;
 
 import java.util.function.Supplier;
 
-import com.natelenergy.porter.processor.ValueProcessor;
+import com.natelenergy.porter.model.ValueProcessor;
 
 public class ProcessFileWorker extends FileWorker {
   protected final FileWorkerStatus status;

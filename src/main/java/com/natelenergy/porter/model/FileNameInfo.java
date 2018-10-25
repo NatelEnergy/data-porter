@@ -1,4 +1,4 @@
-package com.natelenergy.porter.processor;
+package com.natelenergy.porter.model;
 
 public class FileNameInfo {
   public final String site;

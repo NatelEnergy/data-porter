@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.natelenergy.porter.util.JSONHelper;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -24,17 +25,10 @@ import io.swagger.annotations.ApiOperation;
 public class InfoResource {
   private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   
-  private final ObjectMapper mapper;
-  
-  public InfoResource() {
-    this.mapper = new ObjectMapper();
-    this.mapper.enable(SerializationFeature.INDENT_OUTPUT);
-  }
-  
   public Map<String,Object> loadGit() throws Exception {
     ClassLoader classLoader = this.getClass().getClassLoader();
     InputStream stream = classLoader.getResourceAsStream("git.json");
-    return mapper.readValue(stream, HashMap.class);
+    return JSONHelper.mapper.readValue(stream, HashMap.class);
   }
   
   @GET
