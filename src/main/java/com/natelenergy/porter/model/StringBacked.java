@@ -60,7 +60,7 @@ public abstract class StringBacked {
     }
   }
   
-  protected void updatedX() {
+  protected void updated() {
     this.updated = System.currentTimeMillis();
     
     // Check if we should try to save the contents

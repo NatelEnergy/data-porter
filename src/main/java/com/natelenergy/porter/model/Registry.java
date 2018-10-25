@@ -15,6 +15,7 @@ import javax.lang.model.SourceVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.natelenergy.porter.processor.FileNameInfo;
 import com.natelenergy.porter.processor.ValueProcessor;
 import com.natelenergy.porter.worker.ProcessingReader;
@@ -24,6 +25,7 @@ public class Registry {
   private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   
   public static class PathInfo implements Supplier<ValueProcessor> {
+    @JsonIgnore
     public DataRepo repo;
     public Path path;
     public FileNameInfo name;

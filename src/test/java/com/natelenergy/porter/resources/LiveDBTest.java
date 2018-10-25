@@ -8,7 +8,7 @@ import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.natelenergy.porter.model.LiveDB;
+import com.natelenergy.porter.model.JsonDB;
 import com.natelenergy.porter.model.StringBacked.StringBackedConfigSupplier;
 
 import static org.assertj.core.api.Assertions.*;
@@ -68,7 +68,7 @@ public class LiveDBTest {
   
     @Test
     public void checkDBManipulation() throws Exception {
-      LiveDB db = new LiveDB("test", null, cfg);
+      JsonDB db = new JsonDB("test", null, cfg);
       
       Map<String,Object> v = new HashMap<>();
       v.put("one", 1);

@@ -8,10 +8,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 
-public class LiveDB extends StringBacked {  
+public class JsonDB extends StringBacked {  
   private Map<String,Object> root;
   
-  public LiveDB(String name, StringStore store, StringBackedConfigSupplier cfg) {
+  public JsonDB(String name, StringStore store, StringBackedConfigSupplier cfg) {
     super(name, store, cfg );
     this.root = new ConcurrentHashMap<>();
     this.load();
@@ -89,7 +89,7 @@ public class LiveDB extends StringBacked {
     }
     finally {
       if(changed) {
-        super.updatedX();
+        super.updated();
       }
     }
   }

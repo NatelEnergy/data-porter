@@ -52,6 +52,12 @@ import io.swagger.annotations.ApiParam;
 public class RepoResource {
   private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+  public static enum Show {
+    nav,
+    info,
+    debug
+  }
+  
   private final Registry registry;
   
   public RepoResource(Registry registry) {
@@ -85,23 +91,32 @@ public class RepoResource {
       @PathParam("path") 
       String path,
       
-      @DefaultValue("false")
-      @QueryParam("info")
-      boolean onlyInfo) throws IOException {
+      @DefaultValue("nav")
+      @QueryParam("show")
+      Show show) throws IOException {
     
-    Registry.PathInfo info = registry.get(instance, path, false);
+    boolean debug = (show==Show.debug);
+    Registry.PathInfo info = registry.get(instance, path, debug);
     if(info==null) {
       return Response.status(Status.NOT_FOUND).build();
+    }
+    if(debug) {
+      return Response.ok(info).build();
     }
 
     if(Files.isDirectory(info.path)) {
       return Response.ok( FileUploadInfo.list(info.path) ).build();
     }
     
-    if(!onlyInfo && Files.exists(info.path)) {
-      return Response.ok(info.path, MediaType.APPLICATION_OCTET_STREAM)
+    if(Files.exists(info.path) && (show==Show.nav)) {
+      String name = info.path.getFileName().toString();
+      if(name.endsWith(".csv")) {
+        return Response.ok(info.path.toFile(), "text/csv")
+            .build();
+      }
+      return Response.ok(info.path.toFile(), MediaType.APPLICATION_OCTET_STREAM)
         .header("Content-Disposition", 
-            "attachment; filename=\"" + info.path.getFileName().toString() + "\"" ) 
+            "attachment; filename=\"" + name + "\"" ) 
         .build();
     }
     return Response.ok(FileUploadInfo.make(info.path, info.repo.store, true)).build();
@@ -190,23 +205,6 @@ public class RepoResource {
     }
     String p = "aaaaaa/" +fileDetail.getFileName();
     return doUploadFile("xxx", p, false, size, data);
-  }
-  
-
-  @GET
-  @Path("{instance}/store/test/{path : (.+)?}")
-  public Response getInfo(
-      @PathParam("instance") 
-      String instance,
-      
-      @PathParam("path") 
-      String path) throws IOException {
-
-    Registry.PathInfo info = registry.get(instance, path, true);
-    if(info==null) {
-      throw new WebApplicationException(Status.NOT_FOUND);
-    }
-    return Response.ok(info).build();
   }
   
   FileUploadInfo doUploadFile(

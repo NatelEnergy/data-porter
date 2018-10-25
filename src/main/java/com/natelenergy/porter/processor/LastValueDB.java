@@ -10,6 +10,11 @@ import java.util.function.Predicate;
 
 import org.json.JSONStringer;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
+import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -28,8 +33,9 @@ import joptsimple.internal.Strings;
 
 import com.natelenergy.porter.model.StringBacked;
 
+@JsonInclude(Include.NON_NULL)
+@JsonTypeInfo(use=Id.CLASS, include=As.PROPERTY, property="@type")
 public class LastValueDB extends StringBacked implements ValueProcessor {
-  private long changed = -1;
   
   public static class LastValueSerializer extends JsonSerializer<LastValue> {
     @Override
@@ -109,10 +115,6 @@ public class LastValueDB extends StringBacked implements ValueProcessor {
     return db.size();
   }
   
-  public long getChanged() {
-    return this.changed;
-  }
-  
   @Override
   public void write(long time, String key, Object value) {
     LastValue old = db.get(key);
@@ -121,12 +123,12 @@ public class LastValueDB extends StringBacked implements ValueProcessor {
       v.time = time;
       v.value = value;
       db.put(key, v);
-      changed = System.currentTimeMillis();
+      super.updated();
     }
     else if(time > old.time) {
       old.value = value;
       old.time = time;
-      changed = System.currentTimeMillis();
+      super.updated();
     }
   }
 

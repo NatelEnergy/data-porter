@@ -28,7 +28,7 @@ public class DataRepo implements StringBackedConfigSupplier {
 
   public final ObjectMapper mapper;
   
-  public final LiveDB json;
+  public final JsonDB json;
   public final LastValueDB last;
   public final Path store;
   
@@ -68,7 +68,7 @@ public class DataRepo implements StringBackedConfigSupplier {
         this.saveConfig();
       }
     }
-    this.json = new LiveDB("db", this.strings, this);
+    this.json = new JsonDB("db", this.strings, this);
     this.last = new LastValueDB( id, this.strings, this);
   }
   
@@ -108,10 +108,11 @@ public class DataRepo implements StringBackedConfigSupplier {
   }
   
   public ProcessingReader getReader(Path path, FileNameInfo info) {
-    if(path.endsWith(".avro")) {
+    String name = path.getFileName().toString();
+    if(name.endsWith(".avro")) {
       return new ReaderAvro(path);
     }
-    if(path.endsWith(".csv")) {
+    if(name.endsWith(".csv")) {
       return new ReaderCSV(path);
     }
     return null;
