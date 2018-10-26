@@ -2,6 +2,7 @@ package com.natelenergy.porter.worker;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -21,8 +22,9 @@ import com.natelenergy.porter.util.JSONHelper;
 public class AvroReaderTest {
   @Test
   public void readUnsignedAvro() throws Exception {
-    
     Path p = Paths.get(ClassLoader.getSystemResource("data/with-uint64-uint32.avro").toURI());
+    assertThat( Files.exists(p) ).withFailMessage("Path should exist: "+p).isTrue();
+    
     System.out.println( "PATH: "+p);
     
     LastValueDB last = new LastValueDB(null,null,null);
