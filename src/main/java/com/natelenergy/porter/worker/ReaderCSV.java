@@ -22,15 +22,23 @@ public class ReaderCSV extends ProcessingReader {
   }
   
   public static Object parse(String v, String type) {
-    switch(type) {
-    case "BOOL": return Boolean.parseBoolean(v);
-    case "REAL": return Float.parseFloat(v);
-
-    case "LINT":
-    case "LONG": return Long.parseLong(v);
-    
-    case "USINT":
-    case "INT": return Integer.parseInt(v);
+    try {
+      switch(type) {
+      case "BOOL": return Boolean.parseBoolean(v);
+  
+      case "DOUBLE":
+      case "LREAL":
+      case "REAL": return Float.parseFloat(v);
+  
+      case "LINT":
+      case "LONG": return Long.parseLong(v);
+      
+      case "USINT":
+      case "INT": return Integer.parseInt(v);
+      }
+    }
+    catch(NumberFormatException ex) {
+      LOGGER.warn("Error parsing: "+type + "/"+v + " :: " + ex.getMessage() );
     }
     return v;
   }

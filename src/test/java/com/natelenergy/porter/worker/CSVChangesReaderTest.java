@@ -20,10 +20,10 @@ import com.natelenergy.porter.util.JSONHelper;
  * Unit tests for {@link PeopleResource}.
  */
 @RunWith(MockitoJUnitRunner.class)
-public class AvroReaderTest {
+public class CSVChangesReaderTest {
   @Test
-  public void readUnsignedAvro() throws Exception {
-    Path p = Paths.get("src","test","resources", "data", "with-uint64-uint32.avro");
+  public void readChanges() throws Exception {
+    Path p = Paths.get("src","test","resources", "data", "system_changes.csv");
     if(!Files.exists(p)) {
       System.out.println( "PATH: "+p.toAbsolutePath().toString() );
       System.out.println( " CWD: "+Paths.get(".").toAbsolutePath() );
@@ -32,25 +32,19 @@ public class AvroReaderTest {
     
     LastValueDB last = new LastValueDB(null,null,null);
     FileWorkerStatus status = new FileWorkerStatus(null, "test");
-    ReaderAvro reader = new ReaderAvro(p);
+    ReaderCSV reader = new ReaderCSV(p);
     reader.process(status, last);
 
-    Object u64 = last.get("fUINT64").getValue();
-    Object u32 = last.get("fUINT32").getValue();
-
-    System.out.println( "U64: "+ u64.getClass() + " // " + u64.toString());
-    System.out.println( "U32: "+ u32.getClass() + " // " + u32.toString());
-    
     System.out.println( "AFTER: "+ JSONHelper.toJSON(last.getDB(null)));
     
 
-    assertThat( last.get("fINT").getValue() ).isEqualTo( 10 );
-    assertThat( last.get("fLONG").getValue() ).isEqualTo( (long)10 );
-    assertThat( last.get("fFLOAT").getValue() ).isEqualTo( (float)10 );
-    assertThat( last.get("fDOUBLE").getValue() ).isEqualTo( (double)10 );
-
-    assertThat( last.get("fUINT64").getValue() ).isEqualTo( UnsignedLong.valueOf(10) );
-    assertThat( last.get("fUINT32").getValue() ).isEqualTo( UnsignedInteger.valueOf(10) );
+//    assertThat( last.get("fINT").getValue() ).isEqualTo( 10 );
+//    assertThat( last.get("fLONG").getValue() ).isEqualTo( (long)10 );
+//    assertThat( last.get("fFLOAT").getValue() ).isEqualTo( (float)10 );
+//    assertThat( last.get("fDOUBLE").getValue() ).isEqualTo( (double)10 );
+//
+//    assertThat( last.get("fUINT64").getValue() ).isEqualTo( UnsignedLong.valueOf(10) );
+//    assertThat( last.get("fUINT32").getValue() ).isEqualTo( UnsignedInteger.valueOf(10) );
     
   }
 }

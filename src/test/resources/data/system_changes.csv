@@ -1,0 +1,15 @@
+#Changes,Field,Value
+#File,time.write,1540496290574
+#File,time.first,1540494000000
+#File,time.last,1540497600000
+#Last,Field,Value,Type
+1540496286797,sys_agent_load,1540496286797,INT
+1540496269773,sys_agent_rev,?,STRING
+1540496269773,sys_agent_start,1540496269773,INT
+1540496278520,sys_rt_rev,?,STRING
+1540496278520,sys_rt_start,1540483964933,INT
+1540496269773,sys_startup,1539656005683,INT
+1540496290553,ControllerPLC_AdsState,Run,AdsState
+1540496276374,ControllerPLC_Connected,Connected,ConnectionState
+#Change,Field,Value
+1540496290553,ControllerPLC_AdsState,Run
