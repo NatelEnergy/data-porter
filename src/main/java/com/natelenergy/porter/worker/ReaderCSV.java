@@ -5,6 +5,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.commons.io.Charsets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,17 +27,24 @@ public class ReaderCSV extends ProcessingReader {
   public static Object parse(String v, String type) {
     try {
       switch(type) {
-      case "BOOL": return Boolean.parseBoolean(v);
-  
-      case "DOUBLE":
-      case "LREAL":
-      case "REAL": return Float.parseFloat(v);
-  
-      case "LINT":
-      case "LONG": return Long.parseLong(v);
-      
-      case "USINT":
-      case "INT": return Integer.parseInt(v);
+        case "BOOL": return Boolean.parseBoolean(v);
+    
+        case "DOUBLE":
+        case "LREAL":
+        case "REAL": return Float.parseFloat(v);
+    
+        case "LINT":
+        case "LONG": return Long.parseLong(v);
+        
+        case "USINT": 
+        case "INT": { 
+          try {
+            return Integer.parseInt(v);
+          }
+          catch(NumberFormatException ex) {
+            return Long.parseLong(v);
+          }
+        }
       }
     }
     catch(NumberFormatException ex) {
@@ -57,17 +67,27 @@ public class ReaderCSV extends ProcessingReader {
     BasicFileAttributes attrs = Files.readAttributes(this.file, BasicFileAttributes.class);
     if(attrs.isRegularFile() && attrs.size() > lastSize) {   
       status.cursor = lastSize = attrs.size();
+      Map<String,String> fieldToType = new HashMap<>();
       try (CSVReader reader = new CSVReader(Files.newBufferedReader(this.file, Charsets.UTF_8)))
       {
         String[] line = reader.readNext();
         while(line != null) {
           if(line.length>0 && !line[0].startsWith("#")) {
-            if(line.length==4) {
+            if(line.length >=3) {
               long when = Long.parseLong(line[0]);
-              processor.write(when, line[1], parse(line[2], line[3]));
+              String field = line[1];
+              String type = null;
+              if(line.length>=4) {
+                type = line[3];
+                fieldToType.put(field, type);
+              }
+              else {
+                type = fieldToType.get(field);
+              }
+              processor.write(when, field, parse(line[2], type));
             }
             else {
-              LOGGER.warn("SKIP: "+Arrays.asList(line));
+              LOGGER.warn("SKIP: "+Arrays.asList(line) + " ("+line.length + " != 4)");
             }
           }
           
