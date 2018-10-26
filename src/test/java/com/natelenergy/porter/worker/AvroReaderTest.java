@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -23,8 +24,11 @@ public class AvroReaderTest {
   @Test
   public void readUnsignedAvro() throws Exception {
     Path p = Paths.get("src","test","resources", "data", "with-uint64-uint32.avro");
-    //Paths.get(ClassLoader.getSystemResource("data/with-uint64-uint32.avro").toURI());
-    assertThat( Files.exists(p) ).withFailMessage("Path should exist: "+p).isTrue();
+    if(!Files.exists(p)) {
+      System.out.println( "PATH: "+p.toAbsolutePath().toString() );
+      System.out.println( " CWD: "+Paths.get(".").toAbsolutePath() );
+      Assertions.fail( "Path should exist: "+p );
+    }
     
     System.out.println( "PATH: "+p);
     
