@@ -17,3 +17,5 @@ target/
 dependency-reduced-pom.xml
 
 data/
+
+!src/test/resources/data/
