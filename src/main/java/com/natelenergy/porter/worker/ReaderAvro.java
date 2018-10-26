@@ -1,6 +1,5 @@
 package com.natelenergy.porter.worker;
 
-import java.lang.annotation.Annotation;
 import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
@@ -10,7 +9,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import org.apache.avro.Schema;
@@ -25,14 +23,9 @@ import org.apache.avro.io.DatumReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.PropertyName;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
-import com.fasterxml.jackson.databind.introspect.ConcreteBeanPropertyBase;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonObjectFormatVisitor;
 import com.google.common.base.Functions;
+import com.google.common.primitives.UnsignedInteger;
+import com.google.common.primitives.UnsignedLong;
 import com.natelenergy.porter.model.ValueProcessor;
 
 public class ReaderAvro extends ProcessingReader {
@@ -43,20 +36,23 @@ public class ReaderAvro extends ProcessingReader {
       @Override
       public Object apply(Object t) {
         GenericData.Fixed fixed = (GenericData.Fixed)t;
-        return ByteBuffer.wrap(fixed.bytes()).getLong();
+        long v = ByteBuffer.wrap(fixed.bytes()).getLong();
+        return UnsignedLong.fromLongBits(v);
       }
     };
     public static Function<Object, Object> UINT32 = new Function<Object, Object>() {
       @Override
       public Object apply(Object t) {
         GenericData.Fixed fixed = (GenericData.Fixed)t;
-        return ByteBuffer.wrap(fixed.bytes()).getInt();
+        int v = ByteBuffer.wrap(fixed.bytes()).getInt();
+        return UnsignedInteger.fromIntBits(v);
       }
     };
     
     private static Map<String, Function<Object, Object>> map = new ConcurrentHashMap<>();
     static {
       map.put("UINT64", UINT64);
+      map.put("UINT32", UINT32);
     }
   }
   

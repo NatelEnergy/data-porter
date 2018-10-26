@@ -1,10 +1,7 @@
 package com.natelenergy.porter.model;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-
-import io.jsonwebtoken.lang.Collections;
 
 public class ChainedProcessors implements ValueProcessor {
   

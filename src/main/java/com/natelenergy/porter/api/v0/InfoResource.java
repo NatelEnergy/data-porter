@@ -12,8 +12,6 @@ import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.natelenergy.porter.util.JSONHelper;
 
 import io.swagger.annotations.Api;
