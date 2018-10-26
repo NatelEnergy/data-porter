@@ -2,6 +2,7 @@ package com.natelenergy.porter.worker;
 
 import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -36,7 +37,7 @@ public class ReaderAvro extends ProcessingReader {
       @Override
       public Object apply(Object t) {
         GenericData.Fixed fixed = (GenericData.Fixed)t;
-        long v = ByteBuffer.wrap(fixed.bytes()).getLong();
+        long v = ByteBuffer.wrap(fixed.bytes()).order(ByteOrder.LITTLE_ENDIAN).getLong();
         return UnsignedLong.fromLongBits(v);
       }
     };
@@ -44,7 +45,7 @@ public class ReaderAvro extends ProcessingReader {
       @Override
       public Object apply(Object t) {
         GenericData.Fixed fixed = (GenericData.Fixed)t;
-        int v = ByteBuffer.wrap(fixed.bytes()).getInt();
+        int v = ByteBuffer.wrap(fixed.bytes()).order(ByteOrder.LITTLE_ENDIAN).getInt();
         return UnsignedInteger.fromIntBits(v);
       }
     };
