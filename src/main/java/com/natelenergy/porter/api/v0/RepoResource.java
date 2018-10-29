@@ -68,6 +68,7 @@ public class RepoResource {
   
   public RepoResource(Registry registry) {
     this.registry = registry;
+    info.startup = InfoResource.STARTUP;
   }
 
   @GET

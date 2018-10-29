@@ -21,6 +21,8 @@ import io.swagger.annotations.ApiOperation;
 @Produces(MediaType.APPLICATION_JSON)
 @Api(value="/info", tags="System Info")
 public class InfoResource {
+  public static final long STARTUP = System.currentTimeMillis();
+  
   private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   
   public static Map<String,Object> loadGit() throws Exception {
