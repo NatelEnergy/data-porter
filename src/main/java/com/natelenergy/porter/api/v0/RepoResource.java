@@ -34,6 +34,7 @@ import com.google.common.base.Strings;
 import com.natelenergy.porter.model.SignalRepo;
 import com.natelenergy.porter.model.FileUploadInfo;
 import com.natelenergy.porter.model.Registry;
+import com.natelenergy.porter.model.RepoStatusInfo;
 import com.natelenergy.porter.model.LastValueDB.LastValue;
 import com.natelenergy.porter.worker.FileWorker;
 import com.natelenergy.porter.worker.FileWorkerStatus.State;
@@ -62,6 +63,7 @@ public class RepoResource {
     queue,
   }
   
+  private final RepoStatusInfo info = new RepoStatusInfo();
   private final Registry registry;
   
   public RepoResource(Registry registry) {
@@ -70,20 +72,41 @@ public class RepoResource {
 
   @GET
   @Path("{instance}")
-  public Response getRepoInfo(
+  public RepoStatusInfo getRepoInfo(
       @PathParam("instance") 
       String instance) throws IOException {
     
     SignalRepo repo = registry.repos.get(instance);
     if(repo==null) {
-      return Response.status(Status.NOT_FOUND).build();
+      throw new WebApplicationException(Status.NOT_FOUND);
     }
+    
+    if(this.info.version == null) {
+      try {
+        Map<String,Object> vvv = InfoResource.loadGit();
+        this.info.version = (String)vvv.get("git.commit.id.abbrev");
+      }
+      catch(Exception ex) {
+        this.info.version = "UNKNOWN:"+ex;
+      }
+    }
+    
+    this.info.fields = repo.last.size();
+    return this.info;
+  }
 
-    Map<String,Object> info = new HashMap<>();
-    info.put("id", repo.id);
-    info.put("root", repo.store);
-    info.put("last", repo.last.size());
-    return Response.ok(info).build();
+  @POST
+  @Path("{instance}")
+  public RepoStatusInfo getRepoInfoAndUpdate(
+      @PathParam("instance") 
+      String instance,
+
+      String body) throws IOException 
+  {
+    if(body != null && body.length() > 0) {
+      LOGGER.info( "TODO, update: "+body );
+    }
+    return this.getRepoInfo(instance);
   }
 
   @GET

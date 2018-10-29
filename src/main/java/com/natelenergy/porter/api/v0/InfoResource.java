@@ -23,8 +23,8 @@ import io.swagger.annotations.ApiOperation;
 public class InfoResource {
   private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   
-  public Map<String,Object> loadGit() throws Exception {
-    ClassLoader classLoader = this.getClass().getClassLoader();
+  public static Map<String,Object> loadGit() throws Exception {
+    ClassLoader classLoader = InfoResource.class.getClassLoader();
     InputStream stream = classLoader.getResourceAsStream("git.json");
     return JSONHelper.mapper.readValue(stream, HashMap.class);
   }
