@@ -34,6 +34,10 @@ import joptsimple.internal.Strings;
 @JsonTypeInfo(use=Id.CLASS, include=As.PROPERTY, property="@type")
 public class LastValueDB extends StringBacked implements ValueProcessor {
   
+  public String getJSONID() {
+    return this.getClass().getSimpleName();
+  }
+  
   public static class LastValueSerializer extends JsonSerializer<LastValue> {
     @Override
     public void serialize(LastValue value, JsonGenerator gen, SerializerProvider serializers) throws IOException {

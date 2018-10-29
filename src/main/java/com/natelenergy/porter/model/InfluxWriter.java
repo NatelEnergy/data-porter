@@ -42,6 +42,11 @@ public class InfluxWriter implements ValueProcessor {
     this.influx = influx;
     this.sb = new StringBuilder();
   }
+  
+  public String getJSONID() {
+    return this.getClass().getSimpleName() + " :: " + measurment;
+  }
+  
 
   private void escapeField(final String field) {
     for (int i = 0; i < field.length(); i++) {

@@ -3,9 +3,17 @@ package com.natelenergy.porter.model;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
+import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
+
+@JsonInclude(Include.NON_NULL)
+@JsonTypeInfo(use=Id.CLASS, include=As.PROPERTY, property="@type")
 public class ChainedProcessors implements ValueProcessor {
   
-  final ValueProcessor[] chain;
+  public final ValueProcessor[] chain;
   
   public ChainedProcessors(ValueProcessor ... chain) {
     this.chain = chain;

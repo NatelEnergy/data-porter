@@ -12,6 +12,7 @@ import org.apache.commons.io.Charsets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Strings;
 import com.natelenergy.porter.model.ValueProcessor;
 import com.opencsv.CSVReader;
 
@@ -84,7 +85,13 @@ public class ReaderCSV extends ProcessingReader {
               else {
                 type = fieldToType.get(field);
               }
-              processor.write(when, field, parse(line[2], type));
+              
+              if(Strings.isNullOrEmpty(type)) {
+                LOGGER.error("SKIP: "+Arrays.asList(line) + " (Unknown Type!)");
+              }
+              else {
+                processor.write(when, field, parse(line[2], type));
+              }
             }
             else {
               LOGGER.warn("SKIP: "+Arrays.asList(line) + " ("+line.length + " != 4)");
