@@ -163,7 +163,7 @@ public class ReaderAvro extends ProcessingReader {
           count++;
           status.count = total++;
           status.time = when;
-          if(total % 1000 == 0) {
+          if(total % 10000 == 0) {
             LOGGER.info("indexing: "+this.file + " // Count:"+status.count + " // time:"+when );
           }
         }
@@ -173,6 +173,7 @@ public class ReaderAvro extends ProcessingReader {
         processor.flush();
       }
     }
+    LOGGER.info("indexed:> "+this.file + " // Count:"+status.count + " // time:"+status.time );
     return count;
   }
 }

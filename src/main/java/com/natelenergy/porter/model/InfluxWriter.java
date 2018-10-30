@@ -1,5 +1,6 @@
 package com.natelenergy.porter.model;
 
+import java.lang.invoke.MethodHandles;
 import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.util.Locale;
@@ -10,6 +11,8 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.concurrent.NotThreadSafe;
 
 import org.influxdb.InfluxDB;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -21,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 @JsonTypeInfo(use=Id.CLASS, include=As.PROPERTY, property="@type")
 @NotThreadSafe
 public class InfluxWriter implements ValueProcessor {
+  private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final int MAX_FRACTION_DIGITS = 340;
   private static final ThreadLocal<NumberFormat> NUMBER_FORMATTER =
@@ -35,6 +39,9 @@ public class InfluxWriter implements ValueProcessor {
   private final String measurment;
   private final InfluxDB influx;
   private final StringBuilder sb;
+  
+  private final int maxBuffer = 1024*1024*5; // 5MB 
+  private long count = 0;
   
   public InfluxWriter(InfluxDB influx, String measurment)
   {
@@ -90,8 +97,9 @@ public class InfluxWriter implements ValueProcessor {
     sb.append(' ');
     sb.append(TimeUnit.MILLISECONDS.toNanos(time));
     sb.append('\n');
-    
-    if(sb.length() > 5000) {
+
+    count++;
+    if(sb.length() > maxBuffer) {
       this.flush();
     }
   }
@@ -121,7 +129,8 @@ public class InfluxWriter implements ValueProcessor {
     sb.append(TimeUnit.MILLISECONDS.toNanos(time));
     sb.append('\n');
     
-    if(sb.length() > 5000) {
+    count++;
+    if(sb.length() > maxBuffer) {
       this.flush();
     }
   }
@@ -129,8 +138,11 @@ public class InfluxWriter implements ValueProcessor {
   @Override
   public void flush() {
     if(sb.length()>0) {
+    //  LOGGER.info("Flush: "+this.count + " // " + sb.length());
+      
       influx.write(sb.toString());
       sb.setLength(0);
     }
+    this.count = 0;
   }
 }
