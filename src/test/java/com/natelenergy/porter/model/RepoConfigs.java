@@ -21,6 +21,6 @@ public class RepoConfigs {
     InfluxFactory f = new InfluxFactory();
     cfg.processors.add(f);
     
-    System.out.println( JSONHelper.toJSON(cfg) );
+    System.out.println( "X:" + JSONHelper.toJSON(cfg) );
   }
 }
