@@ -120,7 +120,7 @@ public class SignalRepo implements StringBackedConfigSupplier {
     List<ValueProcessor> list = new ArrayList<>();
     list.add(last);
     for(ProcessorFactory f : this.config.processors) {
-      ValueProcessor p = f.create(path, name);
+      ValueProcessor p = f.create(this.id, path, name);
       if(p!=null) {
         list.add(p);
       }

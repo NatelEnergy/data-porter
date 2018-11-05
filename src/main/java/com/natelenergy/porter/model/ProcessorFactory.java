@@ -26,7 +26,7 @@ public abstract class ProcessorFactory {
   
   public String id;
   
-  public abstract ValueProcessor create(Path path, FileNameInfo info);
+  public abstract ValueProcessor create(String repo, Path path, FileNameInfo info);
   
   
   public static class InfluxFactory extends ProcessorFactory
@@ -34,7 +34,7 @@ public abstract class ProcessorFactory {
     public String url = "http://localhost:8086/";
     public String username;
     public String password;
-    public String database = "signals";
+    public String database = "db_$REPO";
     public String retention = "raw";
     public String duration = "INF";
     
@@ -46,12 +46,15 @@ public abstract class ProcessorFactory {
     
     
     @Override
-    public ValueProcessor create(Path path, FileNameInfo info) {
+    public ValueProcessor create(String repo, Path path, FileNameInfo info) {
       if(info==null || com.google.common.base.Strings.isNullOrEmpty(info.channel)) {
         return null;
       }
       
       if(influx==null) {
+        String url = this.url.replace("$REPO", repo);
+        String database = this.database.replace("$REPO", repo);
+        
         if(Strings.isNullOrEmpty(username)) {
           influx = InfluxDBFactory.connect(url);
         }
