@@ -1,0 +1,4 @@
+#eventID,manager,fault,endpoint,value,conditionHitTime,faultedTime,okTime,releaseTime,ackTime
+#LONG,STRING,STRING,eFaultEndpoint,REAL,MILLIS:time,MILLIS,MILLIS,MILLIS,MILLIS
+13815924,turbine,plant_turbineLP14_pwrtrnProxDnStrNPTOLow,Abort,0,1542315923937,1542315923937,,,
+13815925,turbine,plant_turbineLP14_pwrtrnProxDnStrPTOLow,Abort,0,1542315923937,1542315923937,,,

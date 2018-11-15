@@ -43,7 +43,6 @@ public class AvroReaderTest {
     
     System.out.println( "AFTER: "+ JSONHelper.toJSON(last.getDB(null)));
     
-
     assertThat( last.get("fINT").getValue() ).isEqualTo( 10 );
     assertThat( last.get("fLONG").getValue() ).isEqualTo( (long)10 );
     assertThat( last.get("fFLOAT").getValue() ).isEqualTo( (float)10 );
@@ -51,6 +50,5 @@ public class AvroReaderTest {
 
     assertThat( last.get("fUINT64").getValue() ).isEqualTo( UnsignedLong.valueOf(10) );
     assertThat( last.get("fUINT32").getValue() ).isEqualTo( UnsignedInteger.valueOf(10) );
-    
   }
 }
