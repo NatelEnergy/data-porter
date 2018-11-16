@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Strings;
 import com.natelenergy.porter.model.SignalRepo;
 import com.natelenergy.porter.model.FileUploadInfo;
+import com.natelenergy.porter.model.ProcessorFactory;
 import com.natelenergy.porter.model.Registry;
 import com.natelenergy.porter.model.RepoStatusInfo;
 import com.natelenergy.porter.model.LastValueDB.LastValue;
@@ -88,7 +90,7 @@ public class RepoResource {
         this.info.version = (String)vvv.get("git.commit.id.abbrev");
       }
       catch(Exception ex) {
-        this.info.version = "UNKNOWN:"+ex;
+        this.info.version = "UNKNOWN";
       }
     }
     
@@ -121,6 +123,46 @@ public class RepoResource {
       return Response.status(Status.NOT_FOUND).build();
     }
     return Response.ok(repo.config).build();
+  }
+  
+  @GET
+  @Path("{instance}/processors")
+  public Response getProcessorsInfo(
+      @PathParam("instance") 
+      String instance) throws IOException {
+    
+    SignalRepo repo = registry.repos.get(instance);
+    if(repo==null) {
+      return Response.status(Status.NOT_FOUND).build();
+    }
+    List<String> ids = new ArrayList<>();
+    for(ProcessorFactory f : repo.config.processors) {
+      ids.add(f.id);
+    }
+    return Response.ok(ids).build();
+  }
+
+  @GET
+  @Path("{instance}/processor/{id}")
+  public Response getProcessorStatus(
+      @PathParam("instance") 
+      String instance,
+
+      @PathParam("id") 
+      String id) throws IOException {
+    
+    SignalRepo repo = registry.repos.get(instance);
+    if(repo==null) {
+      return Response.status(Status.NOT_FOUND).build();
+    }
+    List<String> ids = new ArrayList<>();
+    for(ProcessorFactory f : repo.config.processors) {
+      if(f.id.equals(id)) {
+        return Response.ok(f.getStatus()).build();
+      }
+      ids.add(f.id);
+    }
+    return Response.status(Status.NOT_FOUND).build();
   }
   
   @GET

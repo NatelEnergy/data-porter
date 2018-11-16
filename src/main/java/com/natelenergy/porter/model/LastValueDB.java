@@ -180,4 +180,9 @@ public class LastValueDB extends StringBacked implements ValueProcessor {
   public int size() {
     return db.size();
   }
+  
+  @Override
+  public void close() throws IOException {
+    
+  }
 }

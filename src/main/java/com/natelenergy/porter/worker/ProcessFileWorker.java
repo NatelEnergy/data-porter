@@ -22,6 +22,8 @@ public class ProcessFileWorker extends FileWorker {
 
   @Override
   public long doRun() throws Exception {
-    return this.reader.process(this.status, supplier.get());
+    try(ValueProcessor p = supplier.get()) {
+      return this.reader.process(this.status, p);
+    }
   }
 }

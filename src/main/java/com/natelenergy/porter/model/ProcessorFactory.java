@@ -11,6 +11,7 @@ import org.influxdb.dto.QueryResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -20,14 +21,39 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 @JsonInclude(Include.NON_NULL)
 @JsonTypeInfo(use=Id.CLASS, include=As.PROPERTY, property="@type")
 public abstract class ProcessorFactory {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   
+  public static class PathMatcher {
+    public String channel;
+    
+    public boolean matches(FileNameInfo p) {
+      return p.channel.equals(channel);
+    }
+  }
+
+  protected static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   
   public String id;
+  public PathMatcher match;
+  public boolean onlyProcessor = false;
+
+  public final ValueProcessor create(String repo, Path path, FileNameInfo info) {
+    if(this.match!= null) {
+      if(!this.match.matches(info)) {
+        return null;
+      }
+    }
+    return doCreate(repo, path, info);
+  }
+
+  protected abstract ValueProcessor doCreate(String repo, Path path, FileNameInfo info);
   
-  public abstract ValueProcessor create(String repo, Path path, FileNameInfo info);
-  
+  /**
+   * This is the status returned by the API 
+   */
+  @JsonIgnore
+  public Object getStatus() {
+    return this;
+  }
   
   public static class InfluxFactory extends ProcessorFactory
   {
@@ -43,10 +69,8 @@ public abstract class ProcessorFactory {
     private InfluxDB influx;
 
     
-    
-    
     @Override
-    public ValueProcessor create(String repo, Path path, FileNameInfo info) {
+    public ValueProcessor doCreate(String repo, Path path, FileNameInfo info) {
       if(info==null || com.google.common.base.Strings.isNullOrEmpty(info.channel)) {
         return null;
       }

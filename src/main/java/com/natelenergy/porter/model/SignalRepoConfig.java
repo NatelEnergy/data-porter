@@ -1,7 +1,11 @@
 package com.natelenergy.porter.model;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.UUID;
+
+import com.google.common.base.Strings;
 
 
 public class SignalRepoConfig {
@@ -17,6 +21,17 @@ public class SignalRepoConfig {
     }
     if(processors==null) {
       processors = new ArrayList<>();
+    }
+    
+    // Add a unique ID to each processor if missing
+    HashSet<String> ids = new HashSet<>();
+    for(ProcessorFactory f : processors) {
+      if(Strings.isNullOrEmpty(f.id)) {
+        f.id = UUID.randomUUID().toString();
+      }
+      if(ids.contains(f.id)) {
+        throw new IllegalArgumentException("Processor has duplicate ID: "+f.id);
+      }
     }
     return this;
   }

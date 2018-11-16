@@ -1,5 +1,6 @@
 package com.natelenergy.porter.model;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -21,7 +22,7 @@ public class ChainedProcessors implements ValueProcessor {
   public ChainedProcessors(List<ValueProcessor> chain) {
     this.chain = chain.toArray( new ValueProcessor[chain.size()] );
   }
-
+  
   @Override
   public void write(long time, String key, Object value) {
     for(ValueProcessor p : chain) {
@@ -54,5 +55,12 @@ public class ChainedProcessors implements ValueProcessor {
       str.append(chain[i].toString());
     }
     return str.toString();
+  }
+  
+  @Override
+  public void close() throws IOException {
+    for(ValueProcessor p : chain) {
+      p.close();
+    }
   }
 }

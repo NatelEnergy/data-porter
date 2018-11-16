@@ -1,5 +1,6 @@
 package com.natelenergy.porter.model;
 
+import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.math.BigDecimal;
 import java.text.NumberFormat;
@@ -49,12 +50,11 @@ public class InfluxWriter implements ValueProcessor {
     this.influx = influx;
     this.sb = new StringBuilder();
   }
-  
+
   public String getJSONID() {
     return this.getClass().getSimpleName() + " :: " + measurment;
   }
   
-
   private void escapeField(final String field) {
     for (int i = 0; i < field.length(); i++) {
       switch (field.charAt(i)) {
@@ -144,5 +144,10 @@ public class InfluxWriter implements ValueProcessor {
       sb.setLength(0);
     }
     this.count = 0;
+  }
+  
+  @Override
+  public void close() throws IOException {
+    influx.close();
   }
 }

@@ -76,7 +76,6 @@ public class ReaderCSV extends ProcessingReader {
     boolean changesFormat = false;
     String[] names = null;
     String[] formats = null;
-    int timeIndex = -1;
     Map<String,Object> values = null;
     
     long count = 0;
@@ -104,13 +103,6 @@ public class ReaderCSV extends ProcessingReader {
               else if(lineNumber == 2) {
                 formats = line;
                 formats[0] = line[0].substring(1).trim();
-                for(int i=0; i<formats.length; i++) {
-                  if(formats[i].endsWith(":time")) {
-                    timeIndex = i;
-                    formats[i] = formats[i].substring(0,  formats[i].indexOf(':'));
-                    break;
-                  }
-                }
               }
             }
             else {
@@ -148,11 +140,7 @@ public class ReaderCSV extends ProcessingReader {
                   for(int i=0; i<names.length; i++) {
                     String v = line[i];
                     if(!Strings.isNullOrEmpty(v)) {
-                      Object val = parse(v, formats[i]);
-                      values.put(names[i], val);
-                      if(i==timeIndex) {
-                        when = (long)val;
-                      }
+                      values.put(names[i], parse(v, formats[i]));
                     }
                   }
                   processor.write(when, values);
