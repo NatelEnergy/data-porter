@@ -59,7 +59,7 @@ public class NatelFaultEventProcessorFactory extends ProcessorFactory
         Connection conn = DriverManager.getConnection(connection, username, password);
         PreparedStatement del = conn.prepareStatement("DELETE FROM "+table+" WHERE id=?");
         PreparedStatement ins = conn.prepareStatement("INSERT INTO "+table
-            +" (id,manager,fault,endpoint,conditionHitTime,faultedTime,releaseTime,ackTime,value) "
+            +" (id,manager,fault,endpoint,condition_hit_time,faulted_time,release_time,ack_time,value) "
             +" VALUES(?,?,?,?,?,?,?,?,?)");
         
         
