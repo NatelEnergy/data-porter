@@ -9,7 +9,9 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +20,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.natelenergy.porter.model.FileNameInfo;
 import com.natelenergy.porter.model.ProcessorFactory;
 import com.natelenergy.porter.model.ValueProcessor;
+
+import liquibase.*;
+import liquibase.database.*;
+import liquibase.database.jvm.*;
+import liquibase.exception.LiquibaseException;
+import liquibase.resource.ClassLoaderResourceAccessor;
 
 public class NatelFaultEventProcessorFactory extends ProcessorFactory
 {
@@ -28,12 +36,19 @@ public class NatelFaultEventProcessorFactory extends ProcessorFactory
   public String username = "postgres";
   public String password = "???";
   public String table = "fault_events";
-  
+
+  private final Set<String> initalized = new HashSet<>();
   private NatelFaultStatus status = new NatelFaultStatus();
   
   @Override
   @JsonIgnore
-  public Object getStatus() {
+  public Object getStatus(String repo) {
+    try( FaultProcessor p = new FaultProcessor(repo) ) {
+      LOGGER.info("status: "+repo );
+    }
+    catch(Exception ex) {
+      LOGGER.warn("error: "+repo, ex );
+    }
     return status;
   }
   
@@ -44,89 +59,117 @@ public class NatelFaultEventProcessorFactory extends ProcessorFactory
     return null;
   }
   
+  private class FaultProcessor implements ValueProcessor {
+
+    // New Connection every time we read the file
+    Connection conn;
+    PreparedStatement del;
+    PreparedStatement ins;
+    
+    public FaultProcessor(String repo) {
+      String connection = NatelFaultEventProcessorFactory.this.connection.replace("$REPO", repo);
+      String table = NatelFaultEventProcessorFactory.this.table.replace("$REPO", repo);
+      
+      try {
+        // New Connection every time we read the file
+        conn = DriverManager.getConnection(connection, username, password);
+        del = conn.prepareStatement("DELETE FROM "+table+" WHERE id=?");
+        ins = conn.prepareStatement("INSERT INTO "+table
+            +" (id,manager,fault,endpoint,condition_hit_time,faulted_time,release_time,ack_time,value) "
+            +" VALUES(?,?,?,?,?,?,?,?,?)");
+        
+        // The first time this runs, make sure the tables have migrated OK
+        String key = connection + "//" + table;
+        if(!initalized.contains(key)) {
+          this.doLiquidbase(conn);
+          initalized.add(key);
+        }
+      }
+      catch(SQLException ex) {
+        throw new RuntimeException(ex);
+      }
+    }
+    
+    public void doLiquidbase(Connection c) {
+      LOGGER.info("Checking Table Configuration");
+      
+      Liquibase liquibase = null;
+      try {
+        Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(c));
+        liquibase = new Liquibase("agent.sql", 
+            new ClassLoaderResourceAccessor(this.getClass().getClassLoader()), database);
+        liquibase.update("agent");
+      } 
+      catch (LiquibaseException e) {
+          throw new RuntimeException(e);
+      }
+    }
+    
+    @Override
+    public void write(long time, Map<String, Object> record) {
+      try {
+        int i=1;
+        long id = (long)record.get("id");
+        del.setLong(1, id);
+        ins.setLong(i++, id);
+        ins.setString(i++, (String)record.get("manager"));
+        ins.setString(i++, (String)record.get("fault"));
+        ins.setString(i++, (String)record.get("endpoint"));
+
+        ins.setTimestamp(i++, getTS(record.get("conditionHitTime")));
+        ins.setTimestamp(i++, getTS(record.get("faultedTime")));
+        ins.setTimestamp(i++, getTS(record.get("releaseTime")));
+        ins.setTimestamp(i++, getTS(record.get("ackTime")));
+        ins.setFloat(i++, (float)record.get("value"));
+        
+        // Delete then insert
+        conn.setAutoCommit(false);
+        del.executeUpdate();
+        ins.executeUpdate();
+        conn.commit();
+        status.count++;
+      }
+      catch(Exception ex) {
+        LOGGER.warn("error writng fault", ex);
+        status.errors++;
+      }
+      
+      HashMap<String, Object> copy = new HashMap<>(record);
+      status.history.push(copy);
+      if(status.history.size()>20) {
+        status.history.removeLast();
+      }
+      System.out.println( "Write to SQL: "+record );
+    }
+    
+    @Override
+    public void write(long time, String key, Object value) {
+      throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public void flush() {
+      
+    }
+
+    @Override
+    public void close() throws IOException {
+      if (conn != null) {
+        try {
+          conn.close();
+        } 
+        catch (SQLException e) {
+          throw new IOException(e);
+        }
+      }
+    }
+  }
+  
   @Override
   public ValueProcessor doCreate(String repo, Path path, FileNameInfo info) {
     if(info==null || com.google.common.base.Strings.isNullOrEmpty(info.channel)) {
       return null;
     }
-    
-    try {
-      String connection = this.connection.replace("$REPO", repo);
-      String table = this.table.replace("$REPO", repo);
-      
-      return new ValueProcessor() {
-        // New Connection every time we read the file
-        Connection conn = DriverManager.getConnection(connection, username, password);
-        PreparedStatement del = conn.prepareStatement("DELETE FROM "+table+" WHERE id=?");
-        PreparedStatement ins = conn.prepareStatement("INSERT INTO "+table
-            +" (id,manager,fault,endpoint,condition_hit_time,faulted_time,release_time,ack_time,value) "
-            +" VALUES(?,?,?,?,?,?,?,?,?)");
-        
-        
-        @Override
-        public void write(long time, Map<String, Object> record) {
-          try {
-            
-            int i=1;
-            long id = (long)record.get("id");
-            del.setLong(1, id);
-            ins.setLong(i++, id);
-            ins.setString(i++, (String)record.get("manager"));
-            ins.setString(i++, (String)record.get("fault"));
-            ins.setString(i++, (String)record.get("endpoint"));
-
-            ins.setTimestamp(i++, getTS(record.get("conditionHitTime")));
-            ins.setTimestamp(i++, getTS(record.get("faultedTime")));
-            ins.setTimestamp(i++, getTS(record.get("releaseTime")));
-            ins.setTimestamp(i++, getTS(record.get("ackTime")));
-            ins.setFloat(i++, (float)record.get("value"));
-            
-            // Delete then insert
-            conn.setAutoCommit(false);
-            del.executeUpdate();
-            ins.executeUpdate();
-            conn.commit();
-            status.count++;
-          }
-          catch(Exception ex) {
-            LOGGER.warn("error writng fault", ex);
-            status.errors++;
-          }
-          
-          HashMap<String, Object> copy = new HashMap<>(record);
-          status.history.push(copy);
-          if(status.history.size()>20) {
-            status.history.removeLast();
-          }
-          System.out.println( "Write to SQL: "+record );
-        }
-        
-        @Override
-        public void write(long time, String key, Object value) {
-          throw new UnsupportedOperationException();
-        }
-        
-        @Override
-        public void flush() {
-          
-        }
-
-        @Override
-        public void close() throws IOException {
-          if (conn != null) {
-            try {
-              conn.close();
-            } 
-            catch (SQLException e) {
-              throw new IOException(e);
-            }
-          }
-        }
-      };
-    }
-    catch(Exception ex) {
-      LOGGER.warn("error creating fault processor", ex);
-    }
-    return null;
+    return new FaultProcessor(repo);
   }
 }

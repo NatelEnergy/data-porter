@@ -2,7 +2,6 @@ package com.natelenergy.porter.model;
 
 import java.lang.invoke.MethodHandles;
 import java.nio.file.Path;
-
 import org.apache.parquet.Strings;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
@@ -51,7 +50,7 @@ public abstract class ProcessorFactory {
    * This is the status returned by the API 
    */
   @JsonIgnore
-  public Object getStatus() {
+  public Object getStatus(String repo) {
     return this;
   }
   

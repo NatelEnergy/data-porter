@@ -7,8 +7,8 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import com.natelenergy.porter.PorterServerApplication;
-import com.natelenergy.porter.PorterServerConfiguration;
+import com.natelenergy.porter.SignalServerApplication;
+import com.natelenergy.porter.SignalServerConfiguration;
 import com.natelenergy.porter.api.v0.InfoResource;
 import java.io.File;
 import java.io.IOException;
@@ -24,9 +24,9 @@ public class IntegrationTest {
   private static final String CONFIG_PATH = ResourceHelpers.resourceFilePath("test-config.yml");
 
   @ClassRule
-  public static final DropwizardAppRule<PorterServerConfiguration> RULE = 
+  public static final DropwizardAppRule<SignalServerConfiguration> RULE = 
     new DropwizardAppRule<>(
-        PorterServerApplication.class, CONFIG_PATH
+        SignalServerApplication.class, CONFIG_PATH
        // ConfigOverride.config("database.url", "jdbc:h2:" + TMP_FILE)
     );
   

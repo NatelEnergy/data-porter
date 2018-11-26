@@ -31,11 +31,11 @@ import org.eclipse.jetty.servlets.CrossOriginFilter;
 import javax.servlet.DispatcherType;
 import java.util.EnumSet;
 
-public class PorterServerApplication extends Application<PorterServerConfiguration> {
+public class SignalServerApplication extends Application<SignalServerConfiguration> {
   private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   
   public static void main(String[] args) throws Exception {
-    new PorterServerApplication().run(args);
+    new SignalServerApplication().run(args);
   }
 
   @Override
@@ -44,10 +44,10 @@ public class PorterServerApplication extends Application<PorterServerConfigurati
   }
   
   @Override
-  public void initialize(Bootstrap<PorterServerConfiguration> bootstrap) {
-    bootstrap.addBundle(new SwaggerBundle<PorterServerConfiguration>() {
+  public void initialize(Bootstrap<SignalServerConfiguration> bootstrap) {
+    bootstrap.addBundle(new SwaggerBundle<SignalServerConfiguration>() {
       @Override
-      protected SwaggerBundleConfiguration getSwaggerBundleConfiguration(PorterServerConfiguration configuration) {
+      protected SwaggerBundleConfiguration getSwaggerBundleConfiguration(SignalServerConfiguration configuration) {
         return configuration.swaggerBundleConfiguration;
       }
     });
@@ -78,7 +78,7 @@ public class PorterServerApplication extends Application<PorterServerConfigurati
   }
 
   @Override
-  public void run(PorterServerConfiguration configuration, Environment environment) {
+  public void run(SignalServerConfiguration configuration, Environment environment) {
     // Enable CORS headers
     final FilterRegistration.Dynamic cors =
         environment.servlets().addFilter("CORS", CrossOriginFilter.class);

@@ -158,7 +158,7 @@ public class RepoResource {
     List<String> ids = new ArrayList<>();
     for(ProcessorFactory f : repo.config.processors) {
       if(f.id.equals(id)) {
-        return Response.ok(f.getStatus()).build();
+        return Response.ok(f.getStatus(instance)).build();
       }
       ids.add(f.id);
     }

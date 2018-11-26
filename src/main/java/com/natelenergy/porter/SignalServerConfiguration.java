@@ -6,7 +6,7 @@ import com.natelenergy.porter.model.RegistryConfig;
 import io.dropwizard.Configuration;
 import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
 
-public class PorterServerConfiguration extends Configuration {
+public class SignalServerConfiguration extends Configuration {
   
   @JsonProperty("swagger")
   public SwaggerBundleConfiguration swaggerBundleConfiguration;
