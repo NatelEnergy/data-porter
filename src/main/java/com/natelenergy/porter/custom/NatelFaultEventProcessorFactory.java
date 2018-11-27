@@ -91,10 +91,10 @@ public class NatelFaultEventProcessorFactory extends ProcessorFactory
     }
     
     public void doLiquidbase(String url) throws SQLException {
-      LOGGER.info("Checking Table Configuration");
+      LOGGER.info("Checking Table Configuration: "+url);
       synchronized(NatelFaultEventProcessorFactory.this) {
         Liquibase liquibase = null;
-        try( Connection c = DriverManager.getConnection(connection, username, password)) {
+        try( Connection c = DriverManager.getConnection(url, username, password)) {
           Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(c));
           liquibase = new Liquibase("agent.sql", 
               new ClassLoaderResourceAccessor(), database);
