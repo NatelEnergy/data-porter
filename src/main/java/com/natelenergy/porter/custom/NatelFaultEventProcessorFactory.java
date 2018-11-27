@@ -75,8 +75,8 @@ public class NatelFaultEventProcessorFactory extends ProcessorFactory
         conn = DriverManager.getConnection(connection, username, password);
         del = conn.prepareStatement("DELETE FROM "+table+" WHERE id=?");
         ins = conn.prepareStatement("INSERT INTO "+table
-            +" (id,manager,fault,endpoint,condition_hit_time,faulted_time,release_time,ack_time,value) "
-            +" VALUES(?,?,?,?,?,?,?,?,?)");
+            +" (id,root,is_root,manager,fault,endpoint,condition_hit_time,faulted_time,release_time,ack_time,value) "
+            +" VALUES(?,?,?,?,?,?,?,?,?,?,?)");
         
         // The first time this runs, make sure the tables have migrated OK
         String key = connection + "//" + table;
@@ -92,16 +92,17 @@ public class NatelFaultEventProcessorFactory extends ProcessorFactory
     
     public void doLiquidbase(Connection c) {
       LOGGER.info("Checking Table Configuration");
-      
-      Liquibase liquibase = null;
-      try {
-        Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(c));
-        liquibase = new Liquibase("agent.sql", 
-            new ClassLoaderResourceAccessor(this.getClass().getClassLoader()), database);
-        liquibase.update("agent");
-      } 
-      catch (LiquibaseException e) {
-          throw new RuntimeException(e);
+      synchronized(NatelFaultEventProcessorFactory.this) {
+        Liquibase liquibase = null;
+        try {
+          Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(c));
+          liquibase = new Liquibase("agent.sql", 
+              new ClassLoaderResourceAccessor(), database);
+          liquibase.update("agent");
+        } 
+        catch (LiquibaseException e) {
+            throw new RuntimeException(e);
+        }
       }
     }
     
@@ -110,8 +111,11 @@ public class NatelFaultEventProcessorFactory extends ProcessorFactory
       try {
         int i=1;
         long id = (long)record.get("id");
+        long root = (long)record.get("root");
         del.setLong(1, id);
         ins.setLong(i++, id);
+        ins.setLong(i++, root);
+        ins.setBoolean(i++, (id==root));
         ins.setString(i++, (String)record.get("manager"));
         ins.setString(i++, (String)record.get("fault"));
         ins.setString(i++, (String)record.get("endpoint"));
@@ -134,12 +138,10 @@ public class NatelFaultEventProcessorFactory extends ProcessorFactory
         status.errors++;
       }
       
-      HashMap<String, Object> copy = new HashMap<>(record);
-      status.history.push(copy);
+      status.history.push(new HashMap<>(record));
       if(status.history.size()>20) {
         status.history.removeLast();
       }
-      System.out.println( "Write to SQL: "+record );
     }
     
     @Override

@@ -5,6 +5,7 @@ DROP TABLE IF EXISTS fault_events;
 CREATE TABLE fault_events (
   id int8 PRIMARY KEY,
   root int8 DEFAULT 0,
+  is_root BOOL DEFAULT FALSE,
   manager varchar NOT NULL,
   fault varchar NOT NULL,
   endpoint varchar NOT NULL,
