@@ -173,7 +173,7 @@ public class ReaderAvro extends ProcessingReader {
         processor.flush();
       }
     }
-    LOGGER.info("indexed:> "+this.file + " // Count:"+status.count + " // time:"+status.time );
+    LOGGER.trace("indexed:> "+this.file + " // Count:"+status.count + " // time:"+status.time );
     return count;
   }
 }

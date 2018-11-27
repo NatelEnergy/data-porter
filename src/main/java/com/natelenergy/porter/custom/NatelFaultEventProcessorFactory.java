@@ -71,37 +71,37 @@ public class NatelFaultEventProcessorFactory extends ProcessorFactory
       String table = NatelFaultEventProcessorFactory.this.table.replace("$REPO", repo);
       
       try {
+        // The first time this runs, make sure the tables have migrated OK
+        String key = connection + "//" + table;
+        if(!initalized.contains(key)) {
+          this.doLiquidbase(connection);
+          initalized.add(key);
+        }
+        
         // New Connection every time we read the file
         conn = DriverManager.getConnection(connection, username, password);
         del = conn.prepareStatement("DELETE FROM "+table+" WHERE id=?");
         ins = conn.prepareStatement("INSERT INTO "+table
-            +" (id,root,is_root,manager,fault,endpoint,condition_hit_time,faulted_time,release_time,ack_time,value) "
-            +" VALUES(?,?,?,?,?,?,?,?,?,?,?)");
-        
-        // The first time this runs, make sure the tables have migrated OK
-        String key = connection + "//" + table;
-        if(!initalized.contains(key)) {
-          this.doLiquidbase(conn);
-          initalized.add(key);
-        }
+            +" (id,root,is_root,manager,fault,endpoint,condition_hit_time,faulted_time,ok_time,release_time,ack_time,value) "
+            +" VALUES(?,?,?,?,?,?,?,?,?,?,?,?)");
       }
       catch(SQLException ex) {
         throw new RuntimeException(ex);
       }
     }
     
-    public void doLiquidbase(Connection c) {
+    public void doLiquidbase(String url) throws SQLException {
       LOGGER.info("Checking Table Configuration");
       synchronized(NatelFaultEventProcessorFactory.this) {
         Liquibase liquibase = null;
-        try {
+        try( Connection c = DriverManager.getConnection(connection, username, password)) {
           Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(c));
           liquibase = new Liquibase("agent.sql", 
               new ClassLoaderResourceAccessor(), database);
           liquibase.update("agent");
         } 
         catch (LiquibaseException e) {
-            throw new RuntimeException(e);
+          throw new RuntimeException(e);
         }
       }
     }
@@ -122,6 +122,7 @@ public class NatelFaultEventProcessorFactory extends ProcessorFactory
 
         ins.setTimestamp(i++, getTS(record.get("conditionHitTime")));
         ins.setTimestamp(i++, getTS(record.get("faultedTime")));
+        ins.setTimestamp(i++, getTS(record.get("okTime")));
         ins.setTimestamp(i++, getTS(record.get("releaseTime")));
         ins.setTimestamp(i++, getTS(record.get("ackTime")));
         ins.setFloat(i++, (float)record.get("value"));

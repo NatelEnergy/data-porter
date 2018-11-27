@@ -12,6 +12,7 @@ CREATE TABLE fault_events (
 
   condition_hit_time timestamptz NOT NULL,
   faulted_time      timestamptz DEFAULT NULL,
+  ok_time           timestamptz DEFAULT NULL,
   release_time      timestamptz DEFAULT NULL,
   ack_time          timestamptz DEFAULT NULL,
 
@@ -24,3 +25,4 @@ create index idx_fault_fault              on fault_events (fault);
 create index idx_fault_endpoint           on fault_events (endpoint);
 create index idx_fault_condition_hit_time on fault_events (condition_hit_time);
 create index idx_fault_faulted_time       on fault_events (faulted_time);
+create index idx_fault_ok_time            on fault_events (ok_time);
