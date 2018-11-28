@@ -66,35 +66,41 @@ public class NatelFaultEventProcessorFactory extends ProcessorFactory
     PreparedStatement del;
     PreparedStatement ins;
     
+    final String connection;
+    final String table;
+    
     public FaultProcessor(String repo) {
-      String connection = NatelFaultEventProcessorFactory.this.connection.replace("$REPO", repo);
-      String table = NatelFaultEventProcessorFactory.this.table.replace("$REPO", repo);
+      connection = NatelFaultEventProcessorFactory.this.connection.replace("$REPO", repo);
+      table = NatelFaultEventProcessorFactory.this.table.replace("$REPO", repo);
       
       try {
         // The first time this runs, make sure the tables have migrated OK
         String key = connection + "//" + table;
         if(!initalized.contains(key)) {
-          this.doLiquidbase(connection);
+          this.doLiquidbase();
           initalized.add(key);
         }
-        
-        // New Connection every time we read the file
-        conn = DriverManager.getConnection(connection, username, password);
-        del = conn.prepareStatement("DELETE FROM "+table+" WHERE id=?");
-        ins = conn.prepareStatement("INSERT INTO "+table
-            +" (id,root,is_root,manager,fault,endpoint,condition_hit_time,faulted_time,ok_time,release_time,ack_time,value) "
-            +" VALUES(?,?,?,?,?,?,?,?,?,?,?,?)");
       }
       catch(SQLException ex) {
         throw new RuntimeException(ex);
       }
     }
     
-    public void doLiquidbase(String url) throws SQLException {
-      LOGGER.info("Checking Table Configuration: "+url);
+    private void checkConnection() throws SQLException {
+      if(conn==null || conn.isClosed()) {
+        conn = DriverManager.getConnection(connection, username, password);
+        del = conn.prepareStatement("DELETE FROM "+table+" WHERE id=?");
+        ins = conn.prepareStatement("INSERT INTO "+table
+            +" (id,root,is_root,manager,fault,endpoint,condition_hit_time,faulted_time,ok_time,release_time,ack_time,value) "
+            +" VALUES(?,?,?,?,?,?,?,?,?,?,?,?)");
+      }
+    }
+    
+    private void doLiquidbase() throws SQLException {
+      LOGGER.info("Checking Table Configuration: "+connection);
       synchronized(NatelFaultEventProcessorFactory.this) {
         Liquibase liquibase = null;
-        try( Connection c = DriverManager.getConnection(url, username, password)) {
+        try( Connection c = DriverManager.getConnection(connection, username, password)) {
           Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(c));
           liquibase = new Liquibase("agent.sql", 
               new ClassLoaderResourceAccessor(), database);
@@ -109,6 +115,8 @@ public class NatelFaultEventProcessorFactory extends ProcessorFactory
     @Override
     public void write(long time, Map<String, Object> record) {
       try {
+        checkConnection();
+        
         int i=1;
         long id = (long)record.get("id");
         long root = (long)record.get("root");
@@ -135,7 +143,7 @@ public class NatelFaultEventProcessorFactory extends ProcessorFactory
         status.count++;
       }
       catch(Exception ex) {
-        LOGGER.warn("error writng fault", ex);
+        LOGGER.warn("error writing fault", ex);
         status.errors++;
       }
       
@@ -159,10 +167,14 @@ public class NatelFaultEventProcessorFactory extends ProcessorFactory
     public void close() throws IOException {
       if (conn != null) {
         try {
+          LOGGER.info("Closing connection: "+table );
           conn.close();
         } 
         catch (SQLException e) {
           throw new IOException(e);
+        }
+        finally {
+          conn = null;
         }
       }
     }
