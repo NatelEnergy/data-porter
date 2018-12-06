@@ -28,8 +28,8 @@ import com.natelenergy.porter.model.ValueProcessor;
 public class InfluxWriter implements ValueProcessor {
   private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private static final int MAX_FRACTION_DIGITS = 340;
-  private static final ThreadLocal<NumberFormat> NUMBER_FORMATTER =
+  protected static final int MAX_FRACTION_DIGITS = 340;
+  protected static final ThreadLocal<NumberFormat> NUMBER_FORMATTER =
           ThreadLocal.withInitial(() -> {
             NumberFormat numberFormat = NumberFormat.getInstance(Locale.ENGLISH);
             numberFormat.setMaximumFractionDigits(MAX_FRACTION_DIGITS);
@@ -68,7 +68,7 @@ public class InfluxWriter implements ValueProcessor {
     }
   }
   
-  private void append(Object value) {
+  protected void append(Object value) {
     if (value instanceof Number) {
       if (value instanceof Double || value instanceof Float || value instanceof BigDecimal) {
         sb.append(NUMBER_FORMATTER.get().format(value));
