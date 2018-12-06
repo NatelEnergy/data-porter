@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.natelenergy.porter.model.StringBacked.StringBackedConfigSupplier;
 import com.natelenergy.porter.worker.ProcessingReader;
+import com.natelenergy.porter.worker.ProcessorFactory;
 import com.natelenergy.porter.worker.ReaderAvro;
 import com.natelenergy.porter.worker.ReaderCSV;
 

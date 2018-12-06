@@ -5,8 +5,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class SafeCounter {
-  public final Map<String, Map<String,AtomicLong>> counter
-     = new ConcurrentHashMap<>();
+  public final Map<String, Map<String,AtomicLong>> counter = new ConcurrentHashMap<>();
   
   public void increment(String what, String value) {
     Map<String,AtomicLong> c = counter.get(what);

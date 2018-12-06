@@ -34,7 +34,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Strings;
 import com.natelenergy.porter.model.SignalRepo;
 import com.natelenergy.porter.model.FileUploadInfo;
-import com.natelenergy.porter.model.ProcessorFactory;
 import com.natelenergy.porter.model.Registry;
 import com.natelenergy.porter.model.RepoStatusInfo;
 import com.natelenergy.porter.model.LastValueDB.LastValue;
@@ -43,6 +42,7 @@ import com.natelenergy.porter.worker.FileWorkerStatus.State;
 import com.natelenergy.porter.worker.ProcessFileWorker;
 import com.natelenergy.porter.worker.ProcessFileWorkerStreaming;
 import com.natelenergy.porter.worker.ProcessingReader;
+import com.natelenergy.porter.worker.ProcessorFactory;
 import com.natelenergy.porter.worker.WriteStreamWorker;
 
 import io.swagger.annotations.Api;

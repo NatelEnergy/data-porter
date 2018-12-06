@@ -21,6 +21,7 @@ import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.DatumReader;
+import org.apache.avro.util.Utf8;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,6 +65,48 @@ public class ReaderAvro extends ProcessingReader {
     super(file);
   }
   
+  public static Function<Object, Object> getNormalizer(Schema s) {
+    Schema.Type t = s.getType();
+    if(t == Type.DOUBLE || t == Type.FLOAT || t == Type.INT ||  t == Type.LONG || t == Type.BOOLEAN ) {
+      return Functions.identity();
+    }
+    else if(t == Type.STRING) {
+      return new Function<Object, Object>() {
+        @Override
+        public Object apply(Object t) {
+          if( t instanceof Utf8 ) {
+            return ((Utf8)t).toString();
+          }
+          return t;
+        }
+      };
+    }
+    else if(t == Type.ARRAY) {
+      final Function<Object, Object> sub = getNormalizer(s.getElementType());
+      return new Function<Object, Object>() {
+        @Override
+        public Object apply(Object t) {
+          GenericData.Array arr = (GenericData.Array)t;
+          List<Object> vals = new ArrayList<>(arr.size());
+          for(int i=0; i<arr.size(); i++) {
+            vals.add(sub.apply(arr.get(i)));
+          }
+          return vals;
+        }
+      };
+    }
+    else if(t == Type.ENUM) {
+      final List<String> vals = s.getEnumSymbols();
+      return new Function<Object, Object>() {
+        @Override
+        public Object apply(Object t) {
+          return vals.get((int)t);
+        }
+      };
+    }
+    return Converters.map.get(s.getName());
+  }
+  
   public static class FConvert {
     public String name;
     public int index;
@@ -72,26 +115,10 @@ public class ReaderAvro extends ProcessingReader {
     public FConvert(Field f) {
       this.name = f.name();
       this.index = f.pos();
+      this.norm = getNormalizer(f.schema());
 
-      Schema s = f.schema();
-      Schema.Type t = s.getType();
-      if(t == Type.DOUBLE || t == Type.FLOAT || t == Type.INT ||  t == Type.LONG || t == Type.STRING || t == Type.BOOLEAN ) {
-        norm = Functions.identity();
-      }
-      else if(t == Type.ENUM) {
-        final List<String> vals = s.getEnumSymbols();
-        norm = new Function<Object, Object>() {
-          @Override
-          public Object apply(Object t) {
-            return vals.get((int)t);
-          }
-        };
-      }
-      else {
-        norm = Converters.map.get(s.getName());
-        if(norm == null) {
-          LOGGER.info("TODO, convert: "+s + " // " + f);
-        }
+      if(this.norm == null) {
+        LOGGER.info("TODO, convert: "+f.schema() + " // " + f);
       }
     }
   }

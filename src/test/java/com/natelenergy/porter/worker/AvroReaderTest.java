@@ -51,4 +51,30 @@ public class AvroReaderTest {
     assertThat( last.get("fUINT64").getValue() ).isEqualTo( UnsignedLong.valueOf(10) );
     assertThat( last.get("fUINT32").getValue() ).isEqualTo( UnsignedInteger.valueOf(10) );
   }
+  
+
+  @Test
+  public void readFFTs() throws Exception {
+    Path p = Paths.get("src","test","resources", "data", "ffts.avro");
+    if(!Files.exists(p)) {
+      System.out.println( "PATH: "+p.toAbsolutePath().toString() );
+      System.out.println( " CWD: "+Paths.get(".").toAbsolutePath() );
+      Assertions.fail( "Path should exist: "+p );
+    }
+    
+    LastValueDB last = new LastValueDB(null,null,null);
+    FileWorkerStatus status = new FileWorkerStatus(null, "test");
+    ReaderAvro reader = new ReaderAvro(p);
+    reader.process(status, last);
+
+    System.out.println( "AFTER: "+ JSONHelper.toJSON(last.getDB(null)));
+//    
+//    assertThat( last.get("fINT").getValue() ).isEqualTo( 10 );
+//    assertThat( last.get("fLONG").getValue() ).isEqualTo( (long)10 );
+//    assertThat( last.get("fFLOAT").getValue() ).isEqualTo( (float)10 );
+//    assertThat( last.get("fDOUBLE").getValue() ).isEqualTo( (double)10 );
+//
+//    assertThat( last.get("fUINT64").getValue() ).isEqualTo( UnsignedLong.valueOf(10) );
+//    assertThat( last.get("fUINT32").getValue() ).isEqualTo( UnsignedInteger.valueOf(10) );
+  }
 }

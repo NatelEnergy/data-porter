@@ -1,4 +1,4 @@
-package com.natelenergy.porter.custom;
+package com.natelenergy.porter.natel;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
@@ -17,9 +17,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.natelenergy.porter.model.FileNameInfo;
-import com.natelenergy.porter.model.ProcessorFactory;
-import com.natelenergy.porter.model.ValueProcessor;
+import com.natelenergy.porter.model.*;
+import com.natelenergy.porter.worker.*;
 
 import liquibase.*;
 import liquibase.database.*;
@@ -27,7 +26,7 @@ import liquibase.database.jvm.*;
 import liquibase.exception.LiquibaseException;
 import liquibase.resource.ClassLoaderResourceAccessor;
 
-public class NatelFaultEventProcessorFactory extends ProcessorFactory
+public class FaultEventFactory extends ProcessorFactory
 {
   protected static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   
@@ -38,7 +37,7 @@ public class NatelFaultEventProcessorFactory extends ProcessorFactory
   public String table = "fault_events";
 
   private final Set<String> initalized = new HashSet<>();
-  private NatelFaultStatus status = new NatelFaultStatus();
+  private FaultEventStatus status = new FaultEventStatus();
   
   @Override
   @JsonIgnore
@@ -70,8 +69,8 @@ public class NatelFaultEventProcessorFactory extends ProcessorFactory
     final String table;
     
     public FaultProcessor(String repo) {
-      connection = NatelFaultEventProcessorFactory.this.connection.replace("$REPO", repo);
-      table = NatelFaultEventProcessorFactory.this.table.replace("$REPO", repo);
+      connection = FaultEventFactory.this.connection.replace("$REPO", repo);
+      table = FaultEventFactory.this.table.replace("$REPO", repo);
       
       try {
         // The first time this runs, make sure the tables have migrated OK
@@ -98,7 +97,7 @@ public class NatelFaultEventProcessorFactory extends ProcessorFactory
     
     private void doLiquidbase() throws SQLException {
       LOGGER.info("Checking Table Configuration: "+connection);
-      synchronized(NatelFaultEventProcessorFactory.this) {
+      synchronized(FaultEventFactory.this) {
         Liquibase liquibase = null;
         try( Connection c = DriverManager.getConnection(connection, username, password)) {
           Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(c));

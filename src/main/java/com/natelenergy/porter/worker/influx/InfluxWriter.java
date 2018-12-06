@@ -1,4 +1,4 @@
-package com.natelenergy.porter.model;
+package com.natelenergy.porter.worker.influx;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
@@ -20,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
+import com.natelenergy.porter.model.ValueProcessor;
 
 @JsonInclude(Include.NON_NULL)
 @JsonTypeInfo(use=Id.CLASS, include=As.PROPERTY, property="@type")
@@ -37,12 +38,12 @@ public class InfluxWriter implements ValueProcessor {
             return numberFormat;
           });
   
-  private final String measurment;
-  private final InfluxDB influx;
-  private final StringBuilder sb;
+  protected final String measurment;
+  protected final InfluxDB influx;
+  protected final StringBuilder sb;
   
-  private final int maxBuffer = 1024*1024*5; // 5MB 
-  private long count = 0;
+  protected final int maxBuffer = 1024*1024*5; // 5MB 
+  protected long count = 0;
   
   public InfluxWriter(InfluxDB influx, String measurment)
   {

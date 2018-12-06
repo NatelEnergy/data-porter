@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.UUID;
 
 import com.google.common.base.Strings;
+import com.natelenergy.porter.worker.ProcessorFactory;
 
 
 public class SignalRepoConfig {
