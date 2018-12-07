@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.natelenergy.porter.util.JSONHelper;
 
 import joptsimple.internal.Strings;
 
@@ -168,13 +169,13 @@ public class LastValueDB extends StringBacked implements ValueProcessor {
       db.clear();
     }
     else {
-      this.load(config.getMapper(), new StringReader(str));
+      this.load(JSONHelper.mapper, new StringReader(str));
     }
   }
 
   @Override
   protected String getSaveString() throws Exception {
-    return config.getMapper().writeValueAsString(db);
+    return JSONHelper.mapper.writeValueAsString(db);
   }
 
   public int size() {

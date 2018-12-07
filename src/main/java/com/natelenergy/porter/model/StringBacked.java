@@ -16,7 +16,6 @@ import com.google.common.base.Strings;
 public abstract class StringBacked {
   public static interface StringBackedConfigSupplier {
     public int getSaveInterval();
-    public ObjectMapper getMapper();
   }
   
   protected static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

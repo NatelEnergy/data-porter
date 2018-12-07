@@ -7,6 +7,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
+import com.natelenergy.porter.util.JSONHelper;
 
 public class JsonDB extends StringBacked {  
   private Map<String,Object> root;
@@ -100,7 +101,7 @@ public class JsonDB extends StringBacked {
       root.clear();
     }
     else {
-      Map<String,Object> vals = config.getMapper().readValue(str, Map.class);
+      Map<String,Object> vals = JSONHelper.mapper.readValue(str, Map.class);
       if(vals != null) {
         this.root = new ConcurrentHashMap<>( vals );
       }  
@@ -109,6 +110,6 @@ public class JsonDB extends StringBacked {
 
   @Override
   protected String getSaveString() throws JsonProcessingException {
-    return config.getMapper().writeValueAsString(root);
+    return JSONHelper.mapper.writeValueAsString(root);
   }
 }

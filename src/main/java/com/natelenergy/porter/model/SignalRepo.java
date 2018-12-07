@@ -1,19 +1,22 @@
 package com.natelenergy.porter.model;
 
+import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 import javax.lang.model.SourceVersion;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.natelenergy.porter.model.StringBacked.StringBackedConfigSupplier;
+import com.natelenergy.porter.util.JSONHelper;
 import com.natelenergy.porter.worker.ProcessingReader;
 import com.natelenergy.porter.worker.ProcessorFactory;
 import com.natelenergy.porter.worker.ReaderAvro;
@@ -24,8 +27,6 @@ public class SignalRepo implements StringBackedConfigSupplier {
 
   public final String id;
 
-  public final ObjectMapper mapper;
-  
   public final JsonDB json;
   public final LastValueDB last;
   public final Path store;
@@ -33,7 +34,7 @@ public class SignalRepo implements StringBackedConfigSupplier {
   private final StringStore strings;
   public final SignalRepoConfig config;
   
-  public SignalRepo(String id, Path store, Path strings)
+  public SignalRepo(String id, Path store, Path strings, Supplier<SignalRepoConfig> defaultConfig)
   {
     if(!SourceVersion.isName(id)) {
       throw new IllegalArgumentException("Invalid id: "+id);
@@ -42,15 +43,9 @@ public class SignalRepo implements StringBackedConfigSupplier {
     this.store = resolveAndCreate( store, id );
     this.strings = new StringStoreFile(resolveAndCreate( strings, id ).toFile());
 
-    this.mapper = new ObjectMapper();
-    this.mapper.enable(SerializationFeature.INDENT_OUTPUT);
-    
     SignalRepoConfig cfg = null;
     try {
-      String json = this.strings.read("config", null);
-      if(json!=null) {
-        cfg = mapper.readValue(json, SignalRepoConfig.class);
-      }
+      cfg = readConfig( this.strings.read("config", null) );
     }
     catch(Exception ex) {
       LOGGER.warn("Error loading config" );
@@ -58,8 +53,13 @@ public class SignalRepo implements StringBackedConfigSupplier {
     finally {
       boolean save = false;
       if(cfg == null) {
-        cfg = new SignalRepoConfig();
-        save = true;
+        if(defaultConfig!=null) {
+          cfg = defaultConfig.get();
+        }
+        if(cfg == null) {
+          cfg = new SignalRepoConfig();
+          save = true;
+        }
       }
       this.config = cfg.validate();
       if(save) {
@@ -71,9 +71,13 @@ public class SignalRepo implements StringBackedConfigSupplier {
     this.last = new LastValueDB( "last", this.strings, this);
   }
   
+  public static SignalRepoConfig readConfig(String json) throws JsonParseException, JsonMappingException, IOException {
+    return JSONHelper.mapper.readValue(json, SignalRepoConfig.class);
+  }
+  
   private void saveConfig() {
     try {
-      this.strings.write("config", mapper.writeValueAsString(config));
+      this.strings.write("config", JSONHelper.mapper.writeValueAsString(config));
     }
     catch(Exception ex) {
       LOGGER.error("Error saving config", ex);
@@ -99,11 +103,6 @@ public class SignalRepo implements StringBackedConfigSupplier {
   @Override
   public int getSaveInterval() {
     return config.saveInterval;
-  }
-
-  @Override
-  public ObjectMapper getMapper() {
-    return this.mapper;
   }
   
   public ProcessingReader getReader(Path path, FileNameInfo info) {

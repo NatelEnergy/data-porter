@@ -1,6 +1,7 @@
 package com.natelenergy.porter.model;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -16,6 +17,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.natelenergy.porter.worker.ProcessingReader;
 import com.natelenergy.porter.worker.WorkerRegistry;
 
@@ -42,10 +45,12 @@ public class Registry {
  
   private final Path store;
   private final Path meta;
+  private final StringStore files;
   
   public Registry(RegistryConfig config) {
     this.store = new File(config.store).toPath();
     this.meta = new File(config.meta).toPath();
+    this.files = new StringStoreFile(this.meta.toFile());
     
     // Load everything in the folder
     try( DirectoryStream<Path> dirs = Files.newDirectoryStream(this.meta) ) {
@@ -58,6 +63,7 @@ public class Registry {
       config.init = new ArrayList<>();
       config.init.add("test");
     }
+    
     
     // Make sure a few repos exist
     for(String r : config.init) {
@@ -76,7 +82,16 @@ public class Registry {
     }
     
     try {
-      SignalRepo p = new SignalRepo(name, store, meta);
+      SignalRepo p = new SignalRepo(name, store, meta, new Supplier<SignalRepoConfig>() {
+        @Override
+        public SignalRepoConfig get() {
+          try {
+            return SignalRepo.readConfig(files.read("config", null));
+          } catch (Exception e) {
+            return null;
+          }
+        }
+      });
       repos.put(p.id, p);
       return p;
     }

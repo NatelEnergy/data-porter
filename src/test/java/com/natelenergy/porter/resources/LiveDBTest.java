@@ -52,17 +52,10 @@ public class LiveDBTest {
 //    }
 //
   
-    public final ObjectMapper mapper = new ObjectMapper();
     public final StringBackedConfigSupplier cfg = new StringBackedConfigSupplier() {
-
       @Override
       public int getSaveInterval() {
         return 1000;
-      }
-
-      @Override
-      public ObjectMapper getMapper() {
-        return mapper;
       }
     };
   
